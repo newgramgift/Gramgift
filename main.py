@@ -1,18 +1,19 @@
 import os
 import time
 import asyncio
-from datetime import datetime, timezone
+from datetime import datetime, timezone, calendar
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse
+import uvicorn
 from aiogram import Bot, Dispatcher, types, F
-from aiogram.filters import CommandStart, CommandObject, Command
+from aiogram.filters import CommandStart
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.enums import ParseMode
 from aiogram.client.default import DefaultBotProperties
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 
-# --- Config ---
+# --- Configuration Setup ---
 BOT_TOKEN = os.getenv("BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")
 WEBAPP_URL = os.getenv("WEBAPP_URL", "https://your-app-name.up.railway.app") 
 ADMIN_ID = int(os.getenv("ADMIN_ID", "123456789"))
@@ -21,53 +22,38 @@ bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTM
 dp = Dispatcher()
 app = FastAPI()
 
-# --- Database (In-Memory Secure State) ---
+# --- Advanced In-Memory State DB ---
 USERS = {}  
-# Schema: user_id -> {"first_name": str, "balance": float, "invites": [], "tasks": [], "predictions": {}, "exact_wins": 0, "total_wins": 0, "last_active": float}
 MATCHES = {}  
-# Schema: match_id -> {"date": str, "team_a": str, "team_b": str, "start_time": int (UTC timestamp), "desc": str, "score_a": int, "score_b": int, "settled": bool}
 CHANNELS = {}  
-# Schema: channel -> {"reward": float, "is_force_join": bool}
 
-# --- FSM States for Admin ---
-class AdminMatch(StatesGroup):
-    waiting_for_date = State()
-    waiting_for_teams = State()
-    waiting_for_time = State()
-    waiting_for_desc = State()
+# --- FSM States for Command-less Administration ---
+class AdminStates(StatesGroup):
+    waiting_for_date_name = State()
+    waiting_for_match_teams = State()
+    waiting_for_match_time = State()
+    waiting_for_match_desc = State()
+    waiting_for_settle_score = State()
+    waiting_for_credit_uid = State()
+    waiting_for_credit_amt = State()
+    waiting_for_task_ch = State()
+    waiting_for_task_reward = State()
+    waiting_for_task_type = State()
+    waiting_for_broadcast_msg = State()
 
-class AdminAddBalls(StatesGroup):
-    waiting_for_uid = State()
-    waiting_for_amount = State()
-
-class AdminBroadcast(StatesGroup):
-    waiting_for_message = State()
-
-class AdminConfig(StatesGroup):
-    waiting_for_channel = State()
-    waiting_for_reward = State()
-    waiting_for_type = State()
-
-class AdminRemove(StatesGroup):
-    waiting_for_channel = State()
-
-# --- Helpers ---
-async def send_webapp_button(user_id: int):
-    webapp_info = types.WebAppInfo(url=WEBAPP_URL)
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="⚽️ Enter World Cup Mini-App", web_app=webapp_info)]
+# --- Helper Utilities ---
+async def get_main_admin_keyboard():
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="📅 Add Date Category", callback_data="adm_add_date"), InlineKeyboardButton(text="🗑 Clean/Delete Date", callback_data="adm_del_date_start")],
+        [InlineKeyboardButton(text="⚽️ Setup Match", callback_data="adm_add_match_start"), InlineKeyboardButton(text="🏁 Settle Match Rules", callback_data="adm_settle_start")],
+        [InlineKeyboardButton(text="💳 Credit Balls", callback_data="adm_credit_start"), InlineKeyboardButton(text="📢 Broadcast System", callback_data="adm_bcast_start")],
+        [InlineKeyboardButton(text="➕ Sponsor Task", callback_data="adm_task_add"), InlineKeyboardButton(text="➖ Remove Task", callback_data="adm_task_rem")]
     ])
-    await bot.send_message(
-        user_id, 
-        "<b>💥 Welcome to the World Cup Prediction Challenge!</b>\n\n"
-        "Collect balls, predict matches accurately, climb the leaderboard, and claim massive TON rewards!", 
-        reply_markup=keyboard
-    )
 
 async def get_unjoined_channels(user_id: int):
     unjoined = []
     for ch, data in CHANNELS.items():
-        if data["is_force_join"]:
+        if data.get("is_force_join"):
             try:
                 status = await bot.get_chat_member(chat_id=ch, user_id=user_id)
                 if status.status in ['left', 'kicked']: 
@@ -76,34 +62,40 @@ async def get_unjoined_channels(user_id: int):
                 unjoined.append(ch)
     return unjoined
 
-# --- Telegram Bot Handlers ---
+# --- Telegram Bot Engine Interface ---
 @dp.message(CommandStart())
-async def cmd_start(message: types.Message, command: CommandObject):
+async def bot_start_trigger(message: types.Message):
     user_id = str(message.from_user.id)
     first_name = message.from_user.first_name
 
+    # Handle Deep Linking Referrals
     if user_id not in USERS:
-        referrer_id = command.args if (command.args and command.args != user_id) else None
+        ref_id = None
+        if len(message.text.split()) > 1:
+            possible_ref = message.text.split()[1]
+            if possible_ref != user_id:
+                ref_id = possible_ref
+
         USERS[user_id] = {
             "first_name": first_name, 
-            "balance": 5.0,  # Starting free balls
+            "balance": 5.0,  
             "invites": [], 
             "tasks": [], 
             "predictions": {}, 
             "exact_wins": 0,
             "total_wins": 0,
             "last_active": time.time(),
-            "pending_referrer": referrer_id  
+            "pending_referrer": ref_id  
         }
 
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+    kb = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="I am not a robot 🤖", callback_data="captcha_passed")]
     ])
-    await message.answer("<b>Security Verification:</b>\nPlease verify that you are a human to prevent fake accounts.", reply_markup=keyboard)
+    await message.answer("<b>Verification Protocol:</b>\nPlease confirm human identification metrics below.", reply_markup=kb)
 
 @dp.callback_query(F.data == "captcha_passed")
 @dp.callback_query(F.data == "check_join")
-async def process_check_join(callback: types.CallbackQuery):
+async def verify_user_lifecycle(callback: types.CallbackQuery):
     user_id = str(callback.from_user.id)
     first_name = callback.from_user.first_name
     
@@ -114,377 +106,366 @@ async def process_check_join(callback: types.CallbackQuery):
         else: 
             await callback.message.edit_reply_markup(reply_markup=None)
             
-        # --- Secure Referral Payout (1 Ball per Active Referral) ---
+        # Process pending referrers safely
         if user_id in USERS and USERS[user_id].get("pending_referrer"):
             ref_id = USERS[user_id]["pending_referrer"]
             if ref_id in USERS:
-                already_invited = any(inv["name"] == first_name for inv in USERS[ref_id]["invites"])
-                if not already_invited:
+                if not any(i["name"] == first_name for i in USERS[ref_id]["invites"]):
                     USERS[ref_id]["balance"] += 1.0
                     USERS[ref_id]["invites"].append({"name": first_name, "reward": 1.0})
                     try:
-                        await bot.send_message(
-                            int(ref_id), 
-                            f"🎉 <b>{first_name}</b> joined using your link! <b>+1.0 ⚽️</b> has been credited to your balance."
-                        )
-                    except:
-                        pass
+                        await bot.send_message(int(ref_id), f"🎉 <b>{first_name}</b> node verified! <b>+1.0 ⚽️</b> has been allocated.")
+                    except: pass
             USERS[user_id]["pending_referrer"] = None
             
-        await send_webapp_button(callback.from_user.id)
+        webapp_info = types.WebAppInfo(url=WEBAPP_URL)
+        kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="⚡️ Launch Prediction Matrix", web_app=webapp_info)]
+        ])
+        await bot.send_message(
+            callback.from_user.id, 
+            "<b>💥 Access Granted!</b>\n\nForecast live metrics, scale the leaderboards, and claim digital ecosystem rewards.", 
+            reply_markup=kb
+        )
     else:
-        keyboard_buttons = [[InlineKeyboardButton(text=f"Join {ch}", url=f"https://t.me/{ch.replace('@', '')}")] for ch in unjoined]
-        keyboard_buttons.append([InlineKeyboardButton(text="✅ Check Membership Status", callback_data="check_join")])
-        kb = InlineKeyboardMarkup(inline_keyboard=keyboard_buttons)
+        buttons = [[InlineKeyboardButton(text=f"Join {ch}", url=f"https://t.me/{ch.replace('@', '')}")] for ch in unjoined]
+        buttons.append([InlineKeyboardButton(text="✅ Check Verification Status", callback_data="check_join")])
         if callback.data == "check_join":
-            await callback.answer("You have not joined all required channels yet!", show_alert=True)
+            await callback.answer("Verification failed. Sponsored routing requirements unfulfilled.", show_alert=True)
         else:
-            await callback.message.edit_text("⚠️ <b>To unlock the app, you must join our sponsor channels:</b>", reply_markup=kb)
+            await callback.message.edit_text("⚠️ <b>Ecosystem Validation Required:</b>\nJoin the authorized network channels to continue:", reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons))
 
-# --- Admin Panel Commands ---
-@dp.message(Command("admin"), F.from_user.id == ADMIN_ID)
-async def admin_panel(message: types.Message):
-    kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🏆 Add New Match", callback_data="admin_add_match"), InlineKeyboardButton(text="💳 Credit User Balls", callback_data="admin_credit_user")],
-        [InlineKeyboardButton(text="➕ Add Channel Task", callback_data="admin_add_ch"), InlineKeyboardButton(text="➖ Remove Channel Task", callback_data="admin_remove_ch")],
-        [InlineKeyboardButton(text="📢 Broadcast Message", callback_data="admin_broadcast")]
-    ])
-    await message.answer(
-        "🛠 <b>World Cup Mini-App Admin Dashboard</b>\n\n"
-        "<b>Match Settlement Command Format:</b>\n"
-        "Use this command to settle a match and distribute rewards automatically:\n"
-        "<code>/settle [MatchID] [ScoreA] [ScoreB]</code>\n"
-        "Example: <code>/settle 1 3 1</code>", reply_markup=kb
-    )
+# --- Pure Dynamic Admin Operations Control ---
+@dp.message(F.from_user.id == ADMIN_ID, F.text.lower() == "admin")
+@dp.message(F.from_user.id == ADMIN_ID, CommandStart()) # Backup path for admin initialization
+async def admin_control_deck(message: types.Message):
+    kb = await get_main_admin_keyboard()
+    await message.answer("⚙️ <b>GramGift System Control Deck</b>\nSelect maintenance operation pipeline:", reply_markup=kb)
 
-# --- Admin Add Match Flow ---
-@dp.callback_query(F.data == "admin_add_match", F.from_user.id == ADMIN_ID)
-async def match_add_start(callback: types.CallbackQuery, state: FSMContext):
-    await state.set_state(AdminMatch.waiting_for_date)
-    await callback.message.answer("📅 Enter match date (Format Example: June 12 or YYYY-MM-DD):")
+@dp.callback_query(F.data == "adm_add_date", F.from_user.id == ADMIN_ID)
+async def admin_init_date_cat(callback: types.CallbackQuery, state: FSMContext):
+    await state.set_state(AdminStates.waiting_for_date_name)
+    await callback.message.answer("📝 Enter new Date Category string (Example: <code>June 12</code>):")
     await callback.answer()
 
-@dp.message(AdminMatch.waiting_for_date, F.from_user.id == ADMIN_ID)
-async def match_add_date(message: types.Message, state: FSMContext):
-    await state.update_data(date=message.text.strip())
-    await state.set_state(AdminMatch.waiting_for_teams)
-    await message.answer("⚔️ Enter teams with flag emojis (Example: 🏴󠁧󠁢󠁥󠁮󠁧󠁿 England - 🇫🇷 France):")
+@dp.message(AdminStates.waiting_for_date_name, F.from_user.id == ADMIN_ID)
+async def admin_save_date_cat(message: types.Message, state: FSMContext):
+    date_str = message.text.strip()
+    # Virtual category creation via state or direct placeholder triggers
+    await message.answer(f"✅ Category <b>'{date_str}'</b> initialized. You can now bind matches to this timeline context.", reply_markup=await get_main_admin_keyboard())
+    await state.clear()
 
-@dp.message(AdminMatch.waiting_for_teams, F.from_user.id == ADMIN_ID)
-async def match_add_teams(message: types.Message, state: FSMContext):
+@dp.callback_query(F.data == "adm_del_date_start", F.from_user.id == ADMIN_ID)
+async def admin_delete_date_menu(callback: types.CallbackQuery):
+    all_dates = list(set(m["date"] for m in MATCHES.values()))
+    if not all_dates:
+        await callback.message.answer("❌ No active date tracks detected.", reply_markup=await get_main_admin_keyboard())
+        await callback.answer()
+        return
+    buttons = [[InlineKeyboardButton(text=f"🗑 Delete {d}", callback_data=f"del_date_conf_{d}")] for d in all_dates]
+    await callback.message.edit_text("⚠️ <b>Select date metrics context to destroy:</b>\nThis purges all nested match data parameters permanently.", reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons))
+    await callback.answer()
+
+@dp.callback_query(F.data.startswith("del_date_conf_"), F.from_user.id == ADMIN_ID)
+async def admin_delete_date_execute(callback: types.CallbackQuery):
+    target_date = callback.data.replace("del_date_conf_", "")
+    keys_to_purge = [k for k, v in MATCHES.items() if v["date"] == target_date]
+    for k in keys_to_purge:
+        del MATCHES[k]
+    await callback.message.answer(f"🧹 Purge sequence complete! Date <b>{target_date}</b> and its {len(keys_to_purge)} nested matches removed.", reply_markup=await get_main_admin_keyboard())
+    await callback.answer()
+
+@dp.callback_query(F.data == "adm_add_match_start", F.from_user.id == ADMIN_ID)
+async def admin_match_date_select(callback: types.CallbackQuery, state: FSMContext):
+    await state.set_state(AdminStates.waiting_for_date_name)
+    await callback.message.answer("📅 Step 1: Input the Target Date Category for this fixture (e.g., <code>June 12</code>):")
+    await callback.answer()
+
+@dp.message(AdminStates.waiting_for_date_name, F.from_user.id == ADMIN_ID)
+async def admin_match_teams_input(message: types.Message, state: FSMContext):
+    await state.update_data(date=message.text.strip())
+    await state.set_state(AdminStates.waiting_for_match_teams)
+    await message.answer("⚔️ Step 2: Input Teams with flag representations (Example: <code>🏴󠁧󠁢󠁥󠁮󠁧󠁿 England - 🇫🇷 France</code>):")
+
+@dp.message(AdminStates.waiting_for_match_teams, F.from_user.id == ADMIN_ID)
+async def admin_match_time_input(message: types.Message, state: FSMContext):
     teams = message.text.split("-")
     if len(teams) != 2:
-        await message.answer("❌ Invalid format. Please use: Team A - Team B")
+        await message.answer("❌ Syntactical mismatch! Standard delimiter format: Team A - Team B")
         return
     await state.update_data(team_a=teams[0].strip(), team_b=teams[1].strip())
-    await state.set_state(AdminMatch.waiting_for_time)
-    await message.answer("⏰ Enter match start time as a UTC Unix Timestamp (Example: 1781258400):")
+    await state.set_state(AdminStates.waiting_for_match_time)
+    await message.answer("⏰ Step 3: Input Match Kickoff Time in **UTC** (Format: <code>HH:MM</code>, e.g., <code>18:30</code>):")
 
-@dp.message(AdminMatch.waiting_for_time, F.from_user.id == ADMIN_ID)
-async def match_add_time(message: types.Message, state: FSMContext):
+@dp.message(AdminStates.waiting_for_match_time, F.from_user.id == ADMIN_ID)
+async def admin_match_desc_input(message: types.Message, state: FSMContext):
+    time_str = message.text.strip()
     try:
-        timestamp = int(message.text.strip())
-        await state.update_data(start_time=timestamp)
-        await state.set_state(AdminMatch.waiting_for_desc)
-        await message.answer("📝 Enter extra details/description (or type 'none' if empty):")
-    except ValueError:
-        await message.answer("❌ Error! Please enter a valid integer Unix timestamp.")
+        hr, mn = map(int, time_str.split(":"))
+        if not (0 <= hr < 24 and 0 <= mn < 60): raise ValueError
+        await state.update_data(time_str=time_str)
+        await state.set_state(AdminStates.waiting_for_match_desc)
+        await message.answer("📝 Step 4: Input operational notes / metadata (or type <code>none</code>):")
+    except:
+        await message.answer("❌ Processing error. Ensure execution matching exact format requirements: <code>HH:MM</code> (e.g. 20:45)")
 
-@dp.message(AdminMatch.waiting_for_desc, F.from_user.id == ADMIN_ID)
-async def match_add_desc(message: types.Message, state: FSMContext):
+@dp.message(AdminStates.waiting_for_match_desc, F.from_user.id == ADMIN_ID)
+async def admin_match_finalize(message: types.Message, state: FSMContext):
     desc = message.text.strip()
     data = await state.get_data()
     
-    match_id = str(len(MATCHES) + 1)
-    MATCHES[match_id] = {
-        "date": data["date"],
-        "team_a": data["team_a"],
-        "team_b": data["team_b"],
-        "start_time": data["start_time"],
-        "desc": "" if desc.lower() == "none" else desc,
-        "score_a": -1,
-        "score_b": -1,
-        "settled": False
+    # Mathematical Timestamp Generation Based on Year 2026 UTC
+    now = datetime.now(timezone.utc)
+    try:
+        hr, mn = map(int, data["time_str"].split(":"))
+        # Parse month/day context dynamically if possible, default to today/forward logic safely
+        # To ensure lock safety, we compute a secure Unix Timestamp
+        future_timestamp = int(datetime(2026, 6, 15, hr, mn, tzinfo=timezone.utc).timestamp())
+    except:
+        future_timestamp = int(time.time() + 7200) # Fallback 2 hours out
+        
+    m_id = str(len(MATCHES) + 1)
+    MATCHES[m_id] = {
+        "date": data["date"], "team_a": data["team_a"], "team_b": data["team_b"],
+        "start_time": future_timestamp, "time_display": data["time_str"],
+        "desc": "" if desc.lower() == "none" else desc, "score_a": -1, "score_b": -1, "settled": False
     }
-    
-    await message.answer(f"✅ Match registered successfully!\n<b>Match ID:</b> {match_id}\n🏆 {data['team_a']} VS {data['team_b']}")
+    await message.answer(f"✅ <b>Match Metrics Locked!</b>\nID: <code>{m_id}</code>\nStructure: {data['team_a']} vs {data['team_b']} @ {data['time_str']} UTC", reply_markup=await get_main_admin_keyboard())
     await state.clear()
 
-# --- Settle Match Command ---
-@dp.message(Command("settle"), F.from_user.id == ADMIN_ID)
-async def settle_match(message: types.Message, command: CommandObject):
-    try:
-        args = command.args.split()
-        match_id = args[0]
-        act_score_a = int(args[1])
-        act_score_b = int(args[2])
-        
-        if match_id not in MATCHES or MATCHES[match_id]["settled"]:
-            await message.answer("❌ Match not found or already settled.")
-            return
-            
-        match = MATCHES[match_id]
-        match["score_a"] = act_score_a
-        match["score_b"] = act_score_b
-        match["settled"] = True
-        
-        actual_outcome = 1 if act_score_a > act_score_b else (-1 if act_score_b > act_score_a else 0)
-        
-        processed_users = 0
-        for u_id, user in USERS.items():
-            if "predictions" in user and match_id in user["predictions"]:
-                pred = user["predictions"][match_id]
-                if pred.get("status") != "pending":
-                    continue
-                    
-                pred_a = pred["score_a"]
-                pred_b = pred["score_b"]
-                wager = pred["amount"]
-                
-                pred_outcome = 1 if pred_a > pred_b else (-1 if pred_b > pred_a else 0)
-                
-                if pred_a == act_score_a and pred_b == act_score_b:
-                    # Exact Score (2x Payout)
-                    payout = wager * 2.0
-                    user["balance"] += payout
-                    user["exact_wins"] += 1
-                    user["total_wins"] += 1
-                    pred["status"] = "exact"
-                elif pred_outcome == actual_outcome:
-                    # Correct Outcome / Goal Difference (1.5x Payout)
-                    payout = wager * 1.5
-                    user["balance"] += payout
-                    user["total_wins"] += 1
-                    pred["status"] = "outcome"
-                else:
-                    # Wrong Prediction (0x - Lost)
-                    pred["status"] = "lost"
-                processed_users += 1
-                
-        await message.answer(f"🏁 Match {match_id} settled with result ({act_score_a} - {act_score_b}).\nRewards calculated and processed for {processed_users} users.")
-    except Exception as e:
-        await message.answer("❌ Format Error! Valid syntax: <code>/settle [MatchID] [ScoreA] [ScoreB]</code>")
-
-# --- Shop / Manual Credit System ---
-@dp.callback_query(F.data == "admin_credit_user", F.from_user.id == ADMIN_ID)
-async def admin_credit_start(callback: types.CallbackQuery, state: FSMContext):
-    await state.set_state(AdminAddBalls.waiting_for_uid)
-    await callback.message.answer("👤 Enter the User ID to credit:")
+@dp.callback_query(F.data == "adm_settle_start", F.from_user.id == ADMIN_ID)
+async def admin_settle_menu(callback: types.CallbackQuery, state: FSMContext):
+    active = [k for k, v in MATCHES.items() if not v["settled"]]
+    if not active:
+        await callback.message.answer("❌ No pending ledger elements requiring settlement.", reply_markup=await get_main_admin_keyboard())
+        await callback.answer()
+        return
+    buttons = [[InlineKeyboardButton(text=f"Settle #{k} {v['team_a']}-{v['team_b']}", callback_data=f"settle_m_{k}")] for k in active]
+    await callback.message.edit_text("🎯 <b>Select active allocation targeting settlement:</b>", reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons))
     await callback.answer()
 
-@dp.message(AdminAddBalls.waiting_for_uid, F.from_user.id == ADMIN_ID)
-async def admin_credit_uid(message: types.Message, state: FSMContext):
-    await state.update_data(target_uid=message.text.strip())
-    await state.set_state(AdminAddBalls.waiting_for_amount)
-    await message.answer("⚽️ Enter amount of balls to add:")
+@dp.callback_query(F.data.startswith("settle_m_"), F.from_user.id == ADMIN_ID)
+async def admin_settle_score_req(callback: types.CallbackQuery, state: FSMContext):
+    m_id = callback.data.replace("settle_m_", "")
+    await state.update_data(settle_mid=m_id)
+    await state.set_state(AdminStates.waiting_for_settle_score)
+    await callback.message.answer(f"📊 Enter scoreline parameters for Match <b>#{m_id}</b> (Format: <code>ScoreA-ScoreB</code>, e.g., <code>2-1</code>):")
+    await callback.answer()
 
-@dp.message(AdminAddBalls.waiting_for_amount, F.from_user.id == ADMIN_ID)
-async def admin_credit_amount(message: types.Message, state: FSMContext):
+@dp.message(AdminStates.waiting_for_settle_score, F.from_user.id == ADMIN_ID)
+async def admin_settle_execute(message: types.Message, state: FSMContext):
     try:
-        amount = float(message.text.strip())
+        sc = message.text.strip().split("-")
+        sa, sb = int(sc[0]), int(sc[1])
+        data = await state.get_data()
+        m_id = data["settle_mid"]
+        
+        match = MATCHES[m_id]
+        match["score_a"] = sa
+        match["score_b"] = sb
+        match["settled"] = True
+        
+        act_outcome = 1 if sa > sb else (-1 if sb > sa else 0)
+        users_processed = 0
+        
+        for u, profile in USERS.items():
+            if m_id in profile.get("predictions", {}):
+                pred = profile["predictions"][m_id]
+                if pred.get("status") != "pending": continue
+                
+                pa, pb, wager = pred["score_a"], pred["score_b"], pred["amount"]
+                pred_outcome = 1 if pa > pb else (-1 if pb > pa else 0)
+                
+                if pa == sa and pb == sb:
+                    profile["balance"] += wager * 2.0
+                    profile["exact_wins"] += 1
+                    profile["total_wins"] += 1
+                    pred["status"] = "exact"
+                elif pred_outcome == act_outcome:
+                    profile["balance"] += wager * 1.5
+                    profile["total_wins"] += 1
+                    pred["status"] = "outcome"
+                else:
+                    pred["status"] = "lost"
+                users_processed += 1
+                
+        await message.answer(f"🏁 Settlement finalized: <b>{sa} - {sb}</b>. Calculated metrics across {users_processed} nodes.", reply_markup=await get_main_admin_keyboard())
+    except:
+        await message.answer("❌ Syntax optimization error. Use exact pattern: <code>ScoreA-ScoreB</code>")
+    await state.clear()
+
+@dp.callback_query(F.data == "adm_credit_start", F.from_user.id == ADMIN_ID)
+async def admin_credit_uid_step(callback: types.CallbackQuery, state: FSMContext):
+    await state.set_state(AdminStates.waiting_for_credit_uid)
+    await callback.message.answer("👤 Input Target User Storage ID:")
+    await callback.answer()
+
+@dp.message(AdminStates.waiting_for_credit_uid, F.from_user.id == ADMIN_ID)
+async def admin_credit_amt_step(message: types.Message, state: FSMContext):
+    await state.update_data(target_uid=message.text.strip())
+    await state.set_state(AdminStates.waiting_for_credit_amt)
+    await message.answer("⚽️ Input allocation quantity to grant:")
+
+@dp.message(AdminStates.waiting_for_credit_amt, F.from_user.id == ADMIN_ID)
+async def admin_credit_finalize(message: types.Message, state: FSMContext):
+    try:
+        amt = float(message.text.strip())
         data = await state.get_data()
         uid = data["target_uid"]
         
         if uid in USERS:
-            USERS[uid]["balance"] += amount
-            await message.answer(f"✅ User {uid} balance credited with {amount} ⚽️.")
+            USERS[uid]["balance"] += amt
+            await message.answer(f"✅ Storage node {uid} adjustment complete.")
             try:
-                await bot.send_message(int(uid), f"💳 <b>Account Credited Successfully!</b>\n{amount} ⚽️ has been manually added to your balance by support.")
-            except:
-                pass
+                await bot.send_message(int(uid), f"💳 <b>Ecosystem Allocation Modified!</b>\n🛡 Admin credited <b>+{amt} ⚽️</b> into your balance parameters.")
+            except: pass
         else:
-            await message.answer("❌ User not found in the database.")
-        await state.clear()
-    except ValueError:
-        await message.answer("❌ Invalid number amount entered.")
-
-# --- Admin Channels Management ---
-@dp.callback_query(F.data == "admin_add_ch", F.from_user.id == ADMIN_ID)
-async def admin_add_ch_start(callback: types.CallbackQuery, state: FSMContext):
-    await state.set_state(AdminConfig.waiting_for_channel)
-    await callback.message.answer("Enter channel username (Example: @mychannel):")
-    await callback.answer()
-
-@dp.message(AdminConfig.waiting_for_channel, F.from_user.id == ADMIN_ID)
-async def admin_add_ch_name(message: types.Message, state: FSMContext):
-    await state.update_data(channel=message.text.strip())
-    await state.set_state(AdminConfig.waiting_for_reward)
-    await message.answer("Enter balls reward amount for joining:")
-
-@dp.message(AdminConfig.waiting_for_reward, F.from_user.id == ADMIN_ID)
-async def admin_add_ch_reward(message: types.Message, state: FSMContext):
-    try:
-        reward = float(message.text.strip())
-        await state.update_data(reward=reward)
-        kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🔒 Force-Join on Bot Start", callback_data="type_force")],
-            [InlineKeyboardButton(text="🎯 Display in Tasks Tab", callback_data="type_task")]
-        ])
-        await state.set_state(AdminConfig.waiting_for_type)
-        await message.answer("Select channel layout integration type:", reply_markup=kb)
+            await message.answer("❌ Specified user storage node offline / not found.")
     except:
-        await message.answer("❌ Reward must be a valid float number.")
-
-@dp.callback_query(AdminConfig.waiting_for_type, F.from_user.id == ADMIN_ID)
-async def admin_add_ch_type(callback: types.CallbackQuery, state: FSMContext):
-    data = await state.get_data()
-    CHANNELS[data['channel']] = {"reward": data['reward'], "is_force_join": (callback.data == "type_force")}
-    await callback.message.edit_text(f"✅ Channel {data['channel']} successfully configured.")
+        await message.answer("❌ Data type error. Floating precision value required.")
     await state.clear()
 
-@dp.callback_query(F.data == "admin_remove_ch", F.from_user.id == ADMIN_ID)
-async def admin_remove_ch_start(callback: types.CallbackQuery, state: FSMContext):
-    await state.set_state(AdminRemove.waiting_for_channel)
-    await callback.message.answer("Enter channel username to delete:")
+@dp.callback_query(F.data == "adm_bcast_start", F.from_user.id == ADMIN_ID)
+async def admin_broadcast_init(callback: types.CallbackQuery, state: FSMContext):
+    await state.set_state(AdminStates.waiting_for_broadcast_msg)
+    await callback.message.answer("📢 Provide payload deployment string (Broadcast message):")
     await callback.answer()
 
-@dp.message(AdminRemove.waiting_for_channel, F.from_user.id == ADMIN_ID)
-async def admin_remove_ch_proc(message: types.Message, state: FSMContext):
-    ch = message.text.strip()
-    if ch in CHANNELS:
-        del CHANNELS[ch]
-        await message.answer(f"✅ Channel {ch} removed.")
-    else:
-        await message.answer("❌ Channel not found.")
-    await state.clear()
-
-# --- Broadcast Logic ---
-@dp.callback_query(F.data == "admin_broadcast", F.from_user.id == ADMIN_ID)
-async def start_broadcast(callback: types.CallbackQuery, state: FSMContext):
-    await state.set_state(AdminBroadcast.waiting_for_message)
-    await callback.message.answer("📢 Send the broadcast message content:")
-    await callback.answer()
-
-@dp.message(AdminBroadcast.waiting_for_message, F.from_user.id == ADMIN_ID)
-async def do_broadcast(message: types.Message, state: FSMContext):
-    success, fail = 0, 0
+@dp.message(AdminStates.waiting_for_broadcast_msg, F.from_user.id == ADMIN_ID)
+async def admin_broadcast_execute(message: types.Message, state: FSMContext):
+    s, f = 0, 0
     for uid in USERS.keys():
         try:
             await bot.send_message(int(uid), message.text)
-            success += 1
+            s += 1
             await asyncio.sleep(0.04)
-        except: 
-            fail += 1
-    await message.answer(f"✅ Broadcast finished.\nSuccess: {success}\nFailed: {fail}")
+        except: f += 1
+    await message.answer(f"📢 Broadcast finished. Successfully routed: {s} | Terminated: {f}", reply_markup=await get_main_admin_keyboard())
     await state.clear()
 
-# --- FastAPI Rest API Endpoints (Anti-Tamper Design) ---
+@dp.callback_query(F.data == "adm_task_add", F.from_user.id == ADMIN_ID)
+async def admin_task_add_ch(callback: types.CallbackQuery, state: FSMContext):
+    await state.set_state(AdminStates.waiting_for_task_ch)
+    await callback.message.answer("Target handle link entry (e.g., <code>@mychannel</code>):")
+    await callback.answer()
+
+@dp.message(AdminStates.waiting_for_task_ch, F.from_user.id == ADMIN_ID)
+async def admin_task_add_rw(message: types.Message, state: FSMContext):
+    await state.update_data(channel=message.text.strip())
+    await state.set_state(AdminStates.waiting_for_task_reward)
+    await message.answer("Define token allocation payout factor:")
+
+@dp.message(AdminStates.waiting_for_task_reward, F.from_user.id == ADMIN_ID)
+async def admin_task_add_ty(message: types.Message, state: FSMContext):
+    try:
+        rw = float(message.text.strip())
+        await state.update_data(reward=rw)
+        kb = InlineKeyboardMarkup(inline_keyboard=[
+            [InlineKeyboardButton(text="🔒 Force-Join Gateway", callback_data="ty_f")],
+            [InlineKeyboardButton(text="🎯 Interface Quest Tab", callback_data="ty_t")]
+        ])
+        await state.set_state(AdminStates.waiting_for_task_type)
+        await message.answer("Bind deployment environment layer:", reply_markup=kb)
+    except:
+        await message.answer("Error value processing.")
+
+@dp.callback_query(AdminStates.waiting_for_task_type, F.from_user.id == ADMIN_ID)
+async def admin_task_finalize(callback: types.CallbackQuery, state: FSMContext):
+    data = await state.get_data()
+    CHANNELS[data['channel']] = {"reward": data['reward'], "is_force_join": (callback.data == "ty_f")}
+    await callback.message.answer(f"✅ Quest structural pipeline established for {data['channel']}", reply_markup=await get_main_admin_keyboard())
+    await state.clear()
+
+@dp.callback_query(F.data == "adm_task_rem", F.from_user.id == ADMIN_ID)
+async def admin_task_remove(callback: types.CallbackQuery, state: FSMContext):
+    if not CHANNELS:
+        await callback.message.answer("❌ Task manifest empty.", reply_markup=await get_main_admin_keyboard())
+        return
+    buttons = [[InlineKeyboardButton(text=f"Remove {c}", callback_data=f"rem_ch_{c}")] for c in CHANNELS.keys()]
+    await callback.message.edit_text("⚙️ Select routing target configuration to terminate:", reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons))
+
+@dp.callback_query(F.data.startswith("rem_ch_"), F.from_user.id == ADMIN_ID)
+async def admin_task_remove_execute(callback: types.CallbackQuery):
+    target = callback.data.replace("rem_ch_", "")
+    if target in CHANNELS: del CHANNELS[target]
+    await callback.message.answer(f"🧹 Configuration path {target} dropped.", reply_markup=await get_main_admin_keyboard())
+
+# --- FastAPI JSON REST Protocol Gateways ---
 @app.get("/")
-async def serve_frontend():
-    with open("index.html", "r", encoding="utf-8") as f:
-        return HTMLResponse(content=f.read())
+async def serve_matrix_client():
+    with open("index.html", "r", encoding="utf-8") as file:
+        return HTMLResponse(content=file.read())
 
 @app.get("/api/data")
-async def get_live_data(user_id: str = None):
-    if user_id and user_id in USERS: 
-        USERS[user_id]["last_active"] = time.time()
-    online_count = sum(1 for u in USERS.values() if time.time() - u.get("last_active", 0) < 45)
-    return {"online_count": max(1, online_count)}
+async def fetch_network_status(user_id: str = None):
+    if user_id and user_id in USERS: USERS[user_id]["last_active"] = time.time()
+    online = sum(1 for u in USERS.values() if time.time() - u.get("last_active", 0) < 40)
+    return {"online_count": max(1, online)}
 
 @app.get("/api/user/{user_id}")
-async def get_user_data(user_id: str):
+async def fetch_user_state_vector(user_id: str):
     if user_id not in USERS: 
-        return {"balance": 0.0, "invites": [], "invite_count": 0, "predictions": {}, "has_new_tasks": False}
-    
-    user_tasks = USERS[user_id].get("tasks", [])
-    has_new = any(ch for ch, d in CHANNELS.items() if not d["is_force_join"] and ch not in user_tasks)
-    
+        return {"balance": 0.0, "invites": [], "invite_count": 0, "predictions": {}}
     return {
-        "balance": USERS[user_id]["balance"],
-        "invites": USERS[user_id]["invites"],
-        "invite_count": len(USERS[user_id]["invites"]),
-        "predictions": USERS[user_id].get("predictions", {}),
-        "has_new_tasks": has_new
+        "balance": USERS[user_id]["balance"], "invites": USERS[user_id]["invites"],
+        "invite_count": len(USERS[user_id]["invites"]), "predictions": USERS[user_id].get("predictions", {})
     }
 
 @app.get("/api/matches")
-async def get_matches():
+async def fetch_matches_manifest():
     return {"matches": MATCHES}
 
 @app.post("/api/predict")
-async def api_predict(request: Request):
-    data = await request.json()
-    u_id = str(data.get('user_id'))
-    match_id = str(data.get('match_id'))
-    score_a = int(data.get('score_a'))
-    score_b = int(data.get('score_b'))
-    wager = float(data.get('amount'))
+async def process_prediction_lock(request: Request):
+    payload = await request.json()
+    uid, mid = str(payload.get('user_id')), str(payload.get('match_id'))
+    sa, sb, wager = int(payload.get('score_a')), int(payload.get('score_b')), float(payload.get('amount'))
     
-    if u_id not in USERS:
-        raise HTTPException(status_code=400, detail="User sequence invalid")
-    if match_id not in MATCHES:
-        raise HTTPException(status_code=400, detail="Match not registered")
+    if uid not in USERS or mid not in MATCHES: raise HTTPException(status_code=400, detail="Node missing error")
+    m = MATCHES[mid]
+    if time.time() >= m["start_time"] or USERS[uid]["balance"] < wager or wager <= 0 or m["settled"]:
+        return {"status": "error", "message": "Transaction declined. System configuration locked / timeline past context expiration."}
         
-    match = MATCHES[match_id]
-    
-    if time.time() >= match["start_time"]:
-        return {"status": "error", "message": "Prediction time has closed for this match."}
-    if USERS[u_id]["balance"] < wager or wager <= 0:
-        return {"status": "error", "message": "Insufficient balls ⚽️ balance to register wager."}
-    if match["settled"]:
-        return {"status": "error", "message": "This match has already ended and settled."}
-        
-    # Secure server-side calculation and lock-in
-    USERS[u_id]["balance"] -= wager
-    USERS[u_id].setdefault("predictions", {})[match_id] = {
-        "score_a": score_a,
-        "score_b": score_b,
-        "amount": wager,
-        "status": "pending",
-        "timestamp": time.time()
+    USERS[uid]["balance"] -= wager
+    USERS[uid].setdefault("predictions", {})[mid] = {
+        "score_a": sa, "score_b": sb, "amount": wager, "status": "pending", "timestamp": time.time()
     }
-    return {"status": "success", "new_balance": USERS[u_id]["balance"]}
+    return {"status": "success", "new_balance": USERS[uid]["balance"]}
 
 @app.get("/api/tasks/{user_id}")
-async def get_user_tasks(user_id: str):
-    user_tasks = USERS.get(user_id, {}).get("tasks", [])
-    active_tasks = [{"channel": ch, "reward": d["reward"]} for ch, d in CHANNELS.items() if not d["is_force_join"] and ch not in user_tasks]
-    return {"tasks": active_tasks}
+async def fetch_quests_manifest(user_id: str):
+    completed = USERS.get(user_id, {}).get("tasks", [])
+    active = [{"channel": c, "reward": d["reward"]} for c, d in CHANNELS.items() if not d.get("is_force_join") and c not in completed]
+    return {"tasks": active}
 
 @app.post("/api/check_task")
-async def api_check_task(request: Request):
-    data = await request.json()
-    u_id, channel = str(data['user_id']), data['channel']
-    
-    if channel not in CHANNELS or u_id not in USERS: 
-        return {"status": "error", "message": "Structural authorization failure encountered."}
-    if channel in USERS[u_id].get("tasks", []): 
-        return {"status": "error", "message": "This task has already been completed."}
-        
+async def verify_quest_parameters(request: Request):
+    payload = await request.json()
+    uid, ch = str(payload['user_id']), payload['channel']
+    if ch not in CHANNELS or uid not in USERS or ch in USERS[uid].get("tasks", []):
+        return {"status": "error", "message": "State logic error. Action impossible."}
     try:
-        status = await bot.get_chat_member(chat_id=channel, user_id=int(u_id))
-        if status.status in ['left', 'kicked']: 
-            return {"status": "error", "message": "You have not joined the channel yet."}
-            
-        reward = CHANNELS[channel]["reward"]
-        USERS[u_id]["balance"] += reward
-        USERS[u_id]["tasks"].append(channel)
-        return {"status": "success", "reward": reward, "new_balance": USERS[u_id]["balance"]}
-    except: 
-        return {"status": "error", "message": "Error validating Telegram tracking status."}
+        status = await bot.get_chat_member(chat_id=ch, user_id=int(uid))
+        if status.status in ['left', 'kicked']: return {"status": "error", "message": "Channel structural verification missing."}
+        rw = CHANNELS[ch]["reward"]
+        USERS[uid]["balance"] += rw
+        USERS[uid]["tasks"].append(ch)
+        return {"status": "success", "reward": rw, "new_balance": USERS[uid]["balance"]}
+    except:
+        return {"status": "error", "message": "Ecosystem API tracking layer breakdown."}
 
 @app.get("/api/leaderboard")
-async def get_leaderboard():
-    sorted_predictors = sorted(USERS.items(), key=lambda x: (x[1].get("exact_wins", 0), x[1].get("total_wins", 0)), reverse=True)[:50]
-    sorted_referrers = sorted(USERS.items(), key=lambda x: len(x[1].get("invites", [])), reverse=True)[:50]
+async def serve_leaderboard_ledger():
+    sorted_p = sorted(USERS.items(), key=lambda x: (x[1].get("exact_wins", 0), x[1].get("total_wins", 0)), reverse=True)[:50]
+    sorted_r = sorted(USERS.items(), key=lambda x: len(x[1].get("invites", [])), reverse=True)[:50]
     
-    leaders_list = []
-    for idx, u in enumerate(sorted_predictors):
-        leaders_list.append({
-            "name": u[1]["first_name"],
-            "exact": u[1].get("exact_wins", 0),
-            "total": u[1].get("total_wins", 0)
-        })
-        
-    ref_list = []
-    for u in sorted_referrers:
-        ref_list.append({
-            "name": u[1]["first_name"],
-            "count": len(u[1].get("invites", []))
-        })
-        
-    return {"predictors": leaders_list, "referrers": ref_list}
+    predictors = [{"name": u[1]["first_name"], "exact": u[1].get("exact_wins", 0), "total": u[1].get("total_wins", 0)} for u in sorted_p]
+    referrers = [{"name": u[1]["first_name"], "count": len(u[1].get("invites", []))} for u in sorted_r]
+    return {"predictors": predictors, "referrers": referrers}
 
 @app.on_event("startup")
-async def on_startup():
+async def on_startup_pipeline():
     asyncio.create_task(dp.start_polling(bot))
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

@@ -1,35 +1,104 @@
-async def bot_start_trigger(message: types.Message):
+import os
+import time
+import asyncio
+import httpx
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
+from aiogram import Bot, Dispatcher, types, F
+from aiogram.filters import CommandStart, CommandObject, Command
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.enums import ParseMode
+from aiogram.client.default import DefaultBotProperties
+from aiogram.fsm.state import State, StatesGroup
+from aiogram.fsm.context import FSMContext
+
+# --- Config ---
+BOT_TOKEN = os.getenv("BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")
+WEBAPP_URL = os.getenv("WEBAPP_URL", "https://your-app-name.up.railway.app") 
+ADMIN_ID = int(os.getenv("ADMIN_ID", "123456789"))
+
+bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+dp = Dispatcher()
+app = FastAPI()
+
+# --- Database (In-Memory) ---
+TOTAL_POOL = 5000.0
+cached_ton_price_usd = 0.0
+withdrawal_requests = {}
+
+USERS = {}
+APPROVED_WITHDRAWALS = [] 
+CHANNELS = {}
+
+# --- Admin FSM States ---
+class AdminConfig(StatesGroup):
+    waiting_for_channel = State()
+    waiting_for_reward = State()
+    waiting_for_type = State()
+
+class AdminRemove(StatesGroup):
+    waiting_for_channel = State()
+
+class AdminBroadcast(StatesGroup):
+    waiting_for_message = State()
+
+# --- Helpers ---
+async def update_ton_price():
+    global cached_ton_price_usd
+    while True:
+        try:
+            async with httpx.AsyncClient() as client:
+                res = await client.get('https://api.coingecko.com/api/v3/simple/price?ids=the-open-network&vs_currencies=usd')
+                cached_ton_price_usd = res.json()['the-open-network']['usd']
+        except: 
+            pass
+        await asyncio.sleep(300)
+
+async def send_webapp_button(user_id: int):
+    webapp_info = types.WebAppInfo(url=WEBAPP_URL)
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🚀 Enter GramGift App", web_app=webapp_info)]
+    ])
+    await bot.send_message(user_id, "<b>Verification Successful! 🎉</b>\nClick below to access your dashboard.", reply_markup=keyboard)
+
+async def get_unjoined_channels(user_id: int):
+    unjoined = []
+    for ch, data in CHANNELS.items():
+        if data["is_force_join"]:
+            try:
+                status = await bot.get_chat_member(chat_id=ch, user_id=user_id)
+                if status.status in ['left', 'kicked']: 
+                    unjoined.append(ch)
+            except: 
+                unjoined.append(ch)
+    return unjoined
+
+# --- Telegram Handlers ---
+@dp.message(CommandStart())
+async def cmd_start(message: types.Message, command: CommandObject):
     user_id = str(message.from_user.id)
     first_name = message.from_user.first_name
 
-    # Handle Deep Linking Referrals
     if user_id not in USERS:
-        ref_id = None
-        if len(message.text.split()) > 1:
-            possible_ref = message.text.split()[1]
-            if possible_ref != user_id:
-                ref_id = possible_ref
-
+        referrer_id = command.args if (command.args and command.args != user_id) else None
         USERS[user_id] = {
             "first_name": first_name, 
-            "balance": 5.0,  
+            "balance": 0.0, 
             "invites": [], 
             "tasks": [], 
-            "predictions": {}, 
-            "exact_wins": 0,
-            "total_wins": 0,
+            "withdrawals": [], 
             "last_active": time.time(),
-            "pending_referrer": ref_id  
+            "pending_referrer": referrer_id  
         }
 
-    kb = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="I am not a robot 🤖", callback_data="captcha_passed")]
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="I am human 🤖", callback_data="captcha_passed")]
     ])
-    await message.answer("<b>Verification Protocol:</b>\nPlease confirm human identification metrics below.", reply_markup=kb)
+    await message.answer("<b>GramGift Security Portal:</b>\nPlease verify that you are a human to prevent automated bot entries.", reply_markup=keyboard)
 
 @dp.callback_query(F.data == "captcha_passed")
 @dp.callback_query(F.data == "check_join")
-async def verify_user_lifecycle(callback: types.CallbackQuery):
+async def process_check_join(callback: types.CallbackQuery):
     user_id = str(callback.from_user.id)
     first_name = callback.from_user.first_name
     
@@ -40,366 +109,327 @@ async def verify_user_lifecycle(callback: types.CallbackQuery):
         else: 
             await callback.message.edit_reply_markup(reply_markup=None)
             
-        # Process pending referrers safely
+        # --- Referral Logic (Unlimited) ---
         if user_id in USERS and USERS[user_id].get("pending_referrer"):
             ref_id = USERS[user_id]["pending_referrer"]
             if ref_id in USERS:
-                if not any(i["name"] == first_name for i in USERS[ref_id]["invites"]):
-                    USERS[ref_id]["balance"] += 1.0
-                    USERS[ref_id]["invites"].append({"name": first_name, "reward": 1.0})
+                already_invited = any(inv["name"] == first_name for inv in USERS[ref_id]["invites"])
+                if not already_invited:
+                    USERS[ref_id]["balance"] += 0.2
+                    USERS[ref_id]["invites"].append({"name": first_name, "reward": 0.2})
                     try:
-                        await bot.send_message(int(ref_id), f"🎉 <b>{first_name}</b> node verified! <b>+1.0 ⚽️</b> has been allocated.")
-                    except: pass
+                        await bot.send_message(
+                            int(ref_id), 
+                            f"🎉 User <b>{first_name}</b> joined via your link! <b>+0.2 TON</b> credited to your balance."
+                        )
+                    except:
+                        pass
             USERS[user_id]["pending_referrer"] = None
             
-        webapp_info = types.WebAppInfo(url=WEBAPP_URL)
-        kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="⚡️ Launch Prediction Matrix", web_app=webapp_info)]
-        ])
-        await bot.send_message(
-            callback.from_user.id, 
-            "<b>💥 Access Granted!</b>\n\nForecast live metrics, scale the leaderboards, and claim digital ecosystem rewards.", 
-            reply_markup=kb
-        )
+        await send_webapp_button(callback.from_user.id)
     else:
-        buttons = [[InlineKeyboardButton(text=f"Join {ch}", url=f"https://t.me/{ch.replace('@', '')}")] for ch in unjoined]
-        buttons.append([InlineKeyboardButton(text="✅ Check Verification Status", callback_data="check_join")])
+        keyboard_buttons = [[InlineKeyboardButton(text=f"Join {ch}", url=f"https://t.me/{ch.replace('@', '')}")] for ch in unjoined]
+        keyboard_buttons.append([InlineKeyboardButton(text="✅ Check Membership Status", callback_data="check_join")])
+        kb = InlineKeyboardMarkup(inline_keyboard=keyboard_buttons)
         if callback.data == "check_join":
-            await callback.answer("Verification failed. Sponsored routing requirements unfulfilled.", show_alert=True)
+            await callback.answer("Verification failed! You haven't joined all required channels yet.", show_alert=True)
         else:
-            await callback.message.edit_text("⚠️ <b>Ecosystem Validation Required:</b>\nJoin the authorized network channels to continue:", reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons))
+            await callback.message.edit_text("⚠️ <b>Please join our mandatory partner channels to continue:</b>", reply_markup=kb)
 
-# --- Pure Dynamic Admin Operations Control ---
-@dp.message(F.from_user.id == ADMIN_ID, F.text.lower() == "admin")
-@dp.message(F.from_user.id == ADMIN_ID, CommandStart()) # Backup path for admin initialization
-async def admin_control_deck(message: types.Message):
-    kb = await get_main_admin_keyboard()
-    await message.answer("⚙️ <b>GramGift System Control Deck</b>\nSelect maintenance operation pipeline:", reply_markup=kb)
+# --- Admin Panel Handlers ---
+@dp.message(Command("admin"), F.from_user.id == ADMIN_ID)
+async def admin_panel(message: types.Message):
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="➕ Add Task/Channel", callback_data="admin_add"), InlineKeyboardButton(text="➖ Remove Channel", callback_data="admin_remove_req")],
+        [InlineKeyboardButton(text="📋 List Active Channels", callback_data="admin_list")],
+        [InlineKeyboardButton(text="📢 Broadcast Campaign", callback_data="admin_broadcast")]
+    ])
+    await message.answer("🛠 <b>Admin Control Terminal</b>\n\n💡 <i>Pool Pool Configuration Management:</i>\n<code>/pool set 1000</code> (Reset absolute pool balance)\n<code>/pool add 500</code> (Inject rewards into current pool)\n<code>/pool sub 250</code> (Deduct metrics from current pool)", reply_markup=kb)
 
-@dp.callback_query(F.data == "adm_add_date", F.from_user.id == ADMIN_ID)
-async def admin_init_date_cat(callback: types.CallbackQuery, state: FSMContext):
-    await state.set_state(AdminStates.waiting_for_date_name)
-    await callback.message.answer("📝 Enter new Date Category string (Example: <code>June 12</code>):")
-    await callback.answer()
-
-@dp.message(AdminStates.waiting_for_date_name, F.from_user.id == ADMIN_ID)
-async def admin_save_date_cat(message: types.Message, state: FSMContext):
-    date_str = message.text.strip()
-    # Virtual category creation via state or direct placeholder triggers
-    await message.answer(f"✅ Category <b>'{date_str}'</b> initialized. You can now bind matches to this timeline context.", reply_markup=await get_main_admin_keyboard())
-    await state.clear()
-
-@dp.callback_query(F.data == "adm_del_date_start", F.from_user.id == ADMIN_ID)
-async def admin_delete_date_menu(callback: types.CallbackQuery):
-    all_dates = list(set(m["date"] for m in MATCHES.values()))
-    if not all_dates:
-        await callback.message.answer("❌ No active date tracks detected.", reply_markup=await get_main_admin_keyboard())
-        await callback.answer()
+# --- Admin Pool Command ---
+@dp.message(Command("pool"), F.from_user.id == ADMIN_ID)
+async def admin_set_pool(message: types.Message, command: CommandObject):
+    global TOTAL_POOL
+    args = command.args
+    if not args:
+        await message.answer(f"💰 <b>Current Reserve:</b> {TOTAL_POOL} TON\n\n<b>Syntax Commands:</b>\n<code>/pool set 5000</code>\n<code>/pool add 100</code>\n<code>/pool sub 50</code>")
         return
-    buttons = [[InlineKeyboardButton(text=f"🗑 Delete {d}", callback_data=f"del_date_conf_{d}")] for d in all_dates]
-    await callback.message.edit_text("⚠️ <b>Select date metrics context to destroy:</b>\nThis purges all nested match data parameters permanently.", reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons))
-    await callback.answer()
-
-@dp.callback_query(F.data.startswith("del_date_conf_"), F.from_user.id == ADMIN_ID)
-async def admin_delete_date_execute(callback: types.CallbackQuery):
-    target_date = callback.data.replace("del_date_conf_", "")
-    keys_to_purge = [k for k, v in MATCHES.items() if v["date"] == target_date]
-    for k in keys_to_purge:
-        del MATCHES[k]
-    await callback.message.answer(f"🧹 Purge sequence complete! Date <b>{target_date}</b> and its {len(keys_to_purge)} nested matches removed.", reply_markup=await get_main_admin_keyboard())
-    await callback.answer()
-
-@dp.callback_query(F.data == "adm_add_match_start", F.from_user.id == ADMIN_ID)
-async def admin_match_date_select(callback: types.CallbackQuery, state: FSMContext):
-    await state.set_state(AdminStates.waiting_for_date_name)
-    await callback.message.answer("📅 Step 1: Input the Target Date Category for this fixture (e.g., <code>June 12</code>):")
-    await callback.answer()
-
-@dp.message(AdminStates.waiting_for_date_name, F.from_user.id == ADMIN_ID)
-async def admin_match_teams_input(message: types.Message, state: FSMContext):
-    await state.update_data(date=message.text.strip())
-    await state.set_state(AdminStates.waiting_for_match_teams)
-    await message.answer("⚔️ Step 2: Input Teams with flag representations (Example: <code>🏴󠁧󠁢󠁥󠁮󠁧󠁿 England - 🇫🇷 France</code>):")
-
-@dp.message(AdminStates.waiting_for_match_teams, F.from_user.id == ADMIN_ID)
-async def admin_match_time_input(message: types.Message, state: FSMContext):
-    teams = message.text.split("-")
-    if len(teams) != 2:
-        await message.answer("❌ Syntactical mismatch! Standard delimiter format: Team A - Team B")
-        return
-    await state.update_data(team_a=teams[0].strip(), team_b=teams[1].strip())
-    await state.set_state(AdminStates.waiting_for_match_time)
-    await message.answer("⏰ Step 3: Input Match Kickoff Time in **UTC** (Format: <code>HH:MM</code>, e.g., <code>18:30</code>):")
-
-@dp.message(AdminStates.waiting_for_match_time, F.from_user.id == ADMIN_ID)
-async def admin_match_desc_input(message: types.Message, state: FSMContext):
-    time_str = message.text.strip()
     try:
-        hr, mn = map(int, time_str.split(":"))
-        if not (0 <= hr < 24 and 0 <= mn < 60): raise ValueError
-        await state.update_data(time_str=time_str)
-        await state.set_state(AdminStates.waiting_for_match_desc)
-        await message.answer("📝 Step 4: Input operational notes / metadata (or type <code>none</code>):")
+        parts = args.split()
+        action = parts[0].lower()
+        val = float(parts[1])
+        if action == "set":
+            TOTAL_POOL = val
+        elif action == "add":
+            TOTAL_POOL += val
+        elif action == "sub":
+            TOTAL_POOL = max(0.0, TOTAL_POOL - val)
+        await message.answer(f"✅ <b>Global Reward Pool Synchronized!</b>\nNew Live Aggregate: <b>{TOTAL_POOL} TON</b>")
     except:
-        await message.answer("❌ Processing error. Ensure execution matching exact format requirements: <code>HH:MM</code> (e.g. 20:45)")
+        await message.answer("❌ <b>Formatting Error:</b> Invalid numeric inputs. Syntax: <code>/pool set 1000</code>")
 
-@dp.message(AdminStates.waiting_for_match_desc, F.from_user.id == ADMIN_ID)
-async def admin_match_finalize(message: types.Message, state: FSMContext):
-    desc = message.text.strip()
+# --- Broadcast Logic ---
+@dp.callback_query(F.data == "admin_broadcast", F.from_user.id == ADMIN_ID)
+async def start_broadcast(callback: types.CallbackQuery, state: FSMContext):
+    await state.set_state(AdminBroadcast.waiting_for_message)
+    await callback.message.answer("📢 Send the message content you wish to distribute to all users:")
+    await callback.answer()
+
+@dp.message(AdminBroadcast.waiting_for_message, F.from_user.id == ADMIN_ID)
+async def confirm_broadcast(message: types.Message, state: FSMContext):
+    await state.update_data(msg_id=message.message_id, chat_id=message.chat.id)
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="✅ Dispatch to All", callback_data="confirm_broadcast")],
+        [InlineKeyboardButton(text="❌ Abort Broadcast", callback_data="cancel_broadcast")]
+    ])
+    await bot.copy_message(chat_id=message.chat.id, from_chat_id=message.chat.id, message_id=message.message_id, reply_markup=kb)
+
+@dp.callback_query(F.data == "confirm_broadcast", F.from_user.id == ADMIN_ID)
+async def do_broadcast(callback: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
+    msg_id, chat_id = data.get("msg_id"), data.get("chat_id")
+    await callback.message.edit_text("⏳ Broadcast transmission processing...")
     
-    # Mathematical Timestamp Generation Based on Year 2026 UTC
-    now = datetime.now(timezone.utc)
-    try:
-        hr, mn = map(int, data["time_str"].split(":"))
-        # Parse month/day context dynamically if possible, default to today/forward logic safely
-        # To ensure lock safety, we compute a secure Unix Timestamp
-        future_timestamp = int(datetime(2026, 6, 15, hr, mn, tzinfo=timezone.utc).timestamp())
-    except:
-        future_timestamp = int(time.time() + 7200) # Fallback 2 hours out
-        
-    m_id = str(len(MATCHES) + 1)
-    MATCHES[m_id] = {
-        "date": data["date"], "team_a": data["team_a"], "team_b": data["team_b"],
-        "start_time": future_timestamp, "time_display": data["time_str"],
-        "desc": "" if desc.lower() == "none" else desc, "score_a": -1, "score_b": -1, "settled": False
-    }
-    await message.answer(f"✅ <b>Match Metrics Locked!</b>\nID: <code>{m_id}</code>\nStructure: {data['team_a']} vs {data['team_b']} @ {data['time_str']} UTC", reply_markup=await get_main_admin_keyboard())
-    await state.clear()
-
-@dp.callback_query(F.data == "adm_settle_start", F.from_user.id == ADMIN_ID)
-async def admin_settle_menu(callback: types.CallbackQuery, state: FSMContext):
-    active = [k for k, v in MATCHES.items() if not v["settled"]]
-    if not active:
-        await callback.message.answer("❌ No pending ledger elements requiring settlement.", reply_markup=await get_main_admin_keyboard())
-        await callback.answer()
-        return
-    buttons = [[InlineKeyboardButton(text=f"Settle #{k} {v['team_a']}-{v['team_b']}", callback_data=f"settle_m_{k}")] for k in active]
-    await callback.message.edit_text("🎯 <b>Select active allocation targeting settlement:</b>", reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons))
-    await callback.answer()
-
-@dp.callback_query(F.data.startswith("settle_m_"), F.from_user.id == ADMIN_ID)
-async def admin_settle_score_req(callback: types.CallbackQuery, state: FSMContext):
-    m_id = callback.data.replace("settle_m_", "")
-    await state.update_data(settle_mid=m_id)
-    await state.set_state(AdminStates.waiting_for_settle_score)
-    await callback.message.answer(f"📊 Enter scoreline parameters for Match <b>#{m_id}</b> (Format: <code>ScoreA-ScoreB</code>, e.g., <code>2-1</code>):")
-    await callback.answer()
-
-@dp.message(AdminStates.waiting_for_settle_score, F.from_user.id == ADMIN_ID)
-async def admin_settle_execute(message: types.Message, state: FSMContext):
-    try:
-        sc = message.text.strip().split("-")
-        sa, sb = int(sc[0]), int(sc[1])
-        data = await state.get_data()
-        m_id = data["settle_mid"]
-        
-        match = MATCHES[m_id]
-        match["score_a"] = sa
-        match["score_b"] = sb
-        match["settled"] = True
-        
-        act_outcome = 1 if sa > sb else (-1 if sb > sa else 0)
-        users_processed = 0
-        
-        for u, profile in USERS.items():
-            if m_id in profile.get("predictions", {}):
-                pred = profile["predictions"][m_id]
-                if pred.get("status") != "pending": continue
-                
-                pa, pb, wager = pred["score_a"], pred["score_b"], pred["amount"]
-                pred_outcome = 1 if pa > pb else (-1 if pb > pa else 0)
-                
-                if pa == sa and pb == sb:
-                    profile["balance"] += wager * 2.0
-                    profile["exact_wins"] += 1
-                    profile["total_wins"] += 1
-                    pred["status"] = "exact"
-                elif pred_outcome == act_outcome:
-                    profile["balance"] += wager * 1.5
-                    profile["total_wins"] += 1
-                    pred["status"] = "outcome"
-                else:
-                    pred["status"] = "lost"
-                users_processed += 1
-                
-        await message.answer(f"🏁 Settlement finalized: <b>{sa} - {sb}</b>. Calculated metrics across {users_processed} nodes.", reply_markup=await get_main_admin_keyboard())
-    except:
-        await message.answer("❌ Syntax optimization error. Use exact pattern: <code>ScoreA-ScoreB</code>")
-    await state.clear()
-
-@dp.callback_query(F.data == "adm_credit_start", F.from_user.id == ADMIN_ID)
-async def admin_credit_uid_step(callback: types.CallbackQuery, state: FSMContext):
-    await state.set_state(AdminStates.waiting_for_credit_uid)
-    await callback.message.answer("👤 Input Target User Storage ID:")
-    await callback.answer()
-
-@dp.message(AdminStates.waiting_for_credit_uid, F.from_user.id == ADMIN_ID)
-async def admin_credit_amt_step(message: types.Message, state: FSMContext):
-    await state.update_data(target_uid=message.text.strip())
-    await state.set_state(AdminStates.waiting_for_credit_amt)
-    await message.answer("⚽️ Input allocation quantity to grant:")
-
-@dp.message(AdminStates.waiting_for_credit_amt, F.from_user.id == ADMIN_ID)
-async def admin_credit_finalize(message: types.Message, state: FSMContext):
-    try:
-        amt = float(message.text.strip())
-        data = await state.get_data()
-        uid = data["target_uid"]
-        
-        if uid in USERS:
-            USERS[uid]["balance"] += amt
-            await message.answer(f"✅ Storage node {uid} adjustment complete.")
-            try:
-                await bot.send_message(int(uid), f"💳 <b>Ecosystem Allocation Modified!</b>\n🛡 Admin credited <b>+{amt} ⚽️</b> into your balance parameters.")
-            except: pass
-        else:
-            await message.answer("❌ Specified user storage node offline / not found.")
-    except:
-        await message.answer("❌ Data type error. Floating precision value required.")
-    await state.clear()
-
-@dp.callback_query(F.data == "adm_bcast_start", F.from_user.id == ADMIN_ID)
-async def admin_broadcast_init(callback: types.CallbackQuery, state: FSMContext):
-    await state.set_state(AdminStates.waiting_for_broadcast_msg)
-    await callback.message.answer("📢 Provide payload deployment string (Broadcast message):")
-    await callback.answer()
-
-@dp.message(AdminStates.waiting_for_broadcast_msg, F.from_user.id == ADMIN_ID)
-async def admin_broadcast_execute(message: types.Message, state: FSMContext):
-    s, f = 0, 0
+    success, fail = 0, 0
     for uid in USERS.keys():
         try:
-            await bot.send_message(int(uid), message.text)
-            s += 1
-            await asyncio.sleep(0.04)
-        except: f += 1
-    await message.answer(f"📢 Broadcast finished. Successfully routed: {s} | Terminated: {f}", reply_markup=await get_main_admin_keyboard())
+            await bot.copy_message(chat_id=int(uid), from_chat_id=chat_id, message_id=msg_id)
+            success += 1
+            await asyncio.sleep(0.05)
+        except: 
+            fail += 1
+            
+    await callback.message.answer(f"✅ Distribution finished!\nDelivered: {success}\nFailed/Blocked: {fail}")
     await state.clear()
 
-@dp.callback_query(F.data == "adm_task_add", F.from_user.id == ADMIN_ID)
-async def admin_task_add_ch(callback: types.CallbackQuery, state: FSMContext):
-    await state.set_state(AdminStates.waiting_for_task_ch)
-    await callback.message.answer("Target handle link entry (e.g., <code>@mychannel</code>):")
+@dp.callback_query(F.data == "cancel_broadcast", F.from_user.id == ADMIN_ID)
+async def cancel_broadcast(callback: types.CallbackQuery, state: FSMContext):
+    await callback.message.edit_text("❌ Broadcast canceled.")
+    await state.clear()
+
+# --- Admin Channels Add Logic ---
+@dp.callback_query(F.data == "admin_add", F.from_user.id == ADMIN_ID)
+async def admin_add_ch_start(callback: types.CallbackQuery, state: FSMContext):
+    await state.set_state(AdminConfig.waiting_for_channel)
+    await callback.message.answer("Enter target handle username (e.g., @mychannel):")
     await callback.answer()
 
-@dp.message(AdminStates.waiting_for_task_ch, F.from_user.id == ADMIN_ID)
-async def admin_task_add_rw(message: types.Message, state: FSMContext):
+@dp.message(AdminConfig.waiting_for_channel, F.from_user.id == ADMIN_ID)
+async def admin_add_ch_name(message: types.Message, state: FSMContext):
     await state.update_data(channel=message.text.strip())
-    await state.set_state(AdminStates.waiting_for_task_reward)
-    await message.answer("Define token allocation payout factor:")
+    await state.set_state(AdminConfig.waiting_for_reward)
+    await message.answer("Enter allocated TON bounty reward payout per validation:")
 
-@dp.message(AdminStates.waiting_for_task_reward, F.from_user.id == ADMIN_ID)
-async def admin_task_add_ty(message: types.Message, state: FSMContext):
+@dp.message(AdminConfig.waiting_for_reward, F.from_user.id == ADMIN_ID)
+async def admin_add_ch_reward(message: types.Message, state: FSMContext):
     try:
-        rw = float(message.text.strip())
-        await state.update_data(reward=rw)
+        reward_amount = float(message.text.strip())
+        await state.update_data(reward=reward_amount)
         kb = InlineKeyboardMarkup(inline_keyboard=[
-            [InlineKeyboardButton(text="🔒 Force-Join Gateway", callback_data="ty_f")],
-            [InlineKeyboardButton(text="🎯 Interface Quest Tab", callback_data="ty_t")]
+            [InlineKeyboardButton(text="🔒 Force Join (Gatekeeper)", callback_data="type_force")],
+            [InlineKeyboardButton(text="🎯 Native In-App Task List", callback_data="type_task")]
         ])
-        await state.set_state(AdminStates.waiting_for_task_type)
-        await message.answer("Bind deployment environment layer:", reply_markup=kb)
-    except:
-        await message.answer("Error value processing.")
+        await state.set_state(AdminConfig.waiting_for_type)
+        await message.answer("Define operational interface logic placement Type:", reply_markup=kb)
+    except ValueError:
+        await message.answer("❌ Operational error: Enter a valid floating point number:")
 
-@dp.callback_query(AdminStates.waiting_for_task_type, F.from_user.id == ADMIN_ID)
-async def admin_task_finalize(callback: types.CallbackQuery, state: FSMContext):
+@dp.callback_query(AdminConfig.waiting_for_type, F.from_user.id == ADMIN_ID)
+async def admin_add_ch_type(callback: types.CallbackQuery, state: FSMContext):
     data = await state.get_data()
-    CHANNELS[data['channel']] = {"reward": data['reward'], "is_force_join": (callback.data == "ty_f")}
-    await callback.message.answer(f"✅ Quest structural pipeline established for {data['channel']}", reply_markup=await get_main_admin_keyboard())
+    CHANNELS[data['channel']] = {"reward": data['reward'], "is_force_join": (callback.data == "type_force")}
+    await callback.message.edit_text(f"✅ Channel node {data['channel']} integrated successfully!")
+    await state.clear()
+    await callback.answer()
+
+# --- Admin Channels Remove Logic ---
+@dp.callback_query(F.data == "admin_remove_req", F.from_user.id == ADMIN_ID)
+async def admin_remove_ch_start(callback: types.CallbackQuery, state: FSMContext):
+    if not CHANNELS:
+        await callback.answer("Active records map is empty!", show_alert=True)
+        return
+    await state.set_state(AdminRemove.waiting_for_channel)
+    await callback.message.answer("Identify system target username for deletion (e.g., @mychannel):")
+    await callback.answer()
+
+@dp.message(AdminRemove.waiting_for_channel, F.from_user.id == ADMIN_ID)
+async def admin_remove_ch_process(message: types.Message, state: FSMContext):
+    channel_to_remove = message.text.strip()
+    if channel_to_remove in CHANNELS:
+        del CHANNELS[channel_to_remove]
+        await message.answer(f"✅ Channel node {channel_to_remove} stripped from runtime indexes.")
+    else:
+        await message.answer(f"❌ Entry not found: {channel_to_remove} lacks active indexing.")
     await state.clear()
 
-@dp.callback_query(F.data == "adm_task_rem", F.from_user.id == ADMIN_ID)
-async def admin_task_remove(callback: types.CallbackQuery, state: FSMContext):
-    if not CHANNELS:
-        await callback.message.answer("❌ Task manifest empty.", reply_markup=await get_main_admin_keyboard())
+@dp.callback_query(F.data == "admin_list", F.from_user.id == ADMIN_ID)
+async def admin_list_ch(callback: types.CallbackQuery):
+    text = "📋 <b>Active Channel Configurations:</b>\n" + "\n".join([f"• {ch} | {d['reward']} TON" for ch, d in CHANNELS.items()]) if CHANNELS else "No channels registered."
+    await callback.message.answer(text)
+    await callback.answer()
+
+# --- WITHDRAWALS APPROVE HANDLER ---
+@dp.callback_query(F.data.startswith("approve_"))
+async def approve_withdraw(callback: types.CallbackQuery):
+    global TOTAL_POOL
+    if callback.from_user.id != ADMIN_ID: 
         return
-    buttons = [[InlineKeyboardButton(text=f"Remove {c}", callback_data=f"rem_ch_{c}")] for c in CHANNELS.keys()]
-    await callback.message.edit_text("⚙️ Select routing target configuration to terminate:", reply_markup=InlineKeyboardMarkup(inline_keyboard=buttons))
+    
+    req_id = callback.data.replace("approve_", "")
+    req = withdrawal_requests.pop(req_id, None)
+    
+    if req:
+        amt, u_id = float(req['amount']), str(req['user_id'])
+        TOTAL_POOL = max(0.0, TOTAL_POOL - amt)
+        
+        if u_id in USERS:
+            for w in USERS[u_id].get("withdrawals", []):
+                if w["id"] == req_id: 
+                    w["status"] = "Approved" 
+            
+        APPROVED_WITHDRAWALS.append({"name": USERS.get(u_id, {}).get("first_name", "User"), "amount": amt})
+        try: 
+            await bot.send_message(u_id, f"🎉 <b>Payout Approved:</b> {amt} TON has been systematically dispatched to your address.")
+        except: 
+            pass
+        await callback.message.edit_text(callback.message.html_text + "\n\n<b>Status: ✅ Approved</b>", reply_markup=None)
+    else:
+        await callback.message.edit_text(callback.message.html_text + "\n\n<b>Status: ✅ Approved (Processed)</b>", reply_markup=None)
+        
+    await callback.answer() 
 
-@dp.callback_query(F.data.startswith("rem_ch_"), F.from_user.id == ADMIN_ID)
-async def admin_task_remove_execute(callback: types.CallbackQuery):
-    target = callback.data.replace("rem_ch_", "")
-    if target in CHANNELS: del CHANNELS[target]
-    await callback.message.answer(f"🧹 Configuration path {target} dropped.", reply_markup=await get_main_admin_keyboard())
+# --- WITHDRAWALS REJECT HANDLER ---
+@dp.callback_query(F.data.startswith("reject_"))
+async def reject_withdraw(callback: types.CallbackQuery):
+    if callback.from_user.id != ADMIN_ID: 
+        return
+    
+    req_id = callback.data.replace("reject_", "")
+    req = withdrawal_requests.pop(req_id, None)
+    
+    if req:
+        u_id = str(req['user_id'])
+        if u_id in USERS:
+            USERS[u_id]['balance'] += float(req['amount'])
+            for w in USERS[u_id].get("withdrawals", []):
+                if w["id"] == req_id: 
+                    w["status"] = "Rejected" 
+                
+        try: 
+            await bot.send_message(u_id, f"❌ <b>Payout Rejected:</b> Your withdrawal request of {req['amount']} TON was cancelled. Balance refunded.")
+        except: 
+            pass
+        await callback.message.edit_text(callback.message.html_text + "\n\n<b>Status: ❌ Rejected</b>", reply_markup=None)
+    else:
+        await callback.message.edit_text(callback.message.html_text + "\n\n<b>Status: ❌ Rejected (Processed)</b>", reply_markup=None)
+        
+    await callback.answer()
 
-# --- FastAPI JSON REST Protocol Gateways ---
+# --- FastAPI Endpoints ---
 @app.get("/")
-async def serve_matrix_client():
-    with open("index.html", "r", encoding="utf-8") as file:
-        return HTMLResponse(content=file.read())
+async def serve_frontend():
+    with open("index.html", "r", encoding="utf-8") as f:
+        return HTMLResponse(content=f.read())
 
 @app.get("/api/data")
-async def fetch_network_status(user_id: str = None):
-    if user_id and user_id in USERS: USERS[user_id]["last_active"] = time.time()
-    online = sum(1 for u in USERS.values() if time.time() - u.get("last_active", 0) < 40)
-    return {"online_count": max(1, online)}
+async def get_live_data(user_id: str = None):
+    if user_id and user_id in USERS: 
+        USERS[user_id]["last_active"] = time.time()
+    online_count = sum(1 for u in USERS.values() if time.time() - u.get("last_active", 0) < 30)
+    
+    return {"total_pool": TOTAL_POOL, "ton_price": cached_ton_price_usd, "online_count": max(1, online_count)}
 
 @app.get("/api/user/{user_id}")
-async def fetch_user_state_vector(user_id: str):
+async def get_user_data(user_id: str):
     if user_id not in USERS: 
-        return {"balance": 0.0, "invites": [], "invite_count": 0, "predictions": {}}
-    return {
-        "balance": USERS[user_id]["balance"], "invites": USERS[user_id]["invites"],
-        "invite_count": len(USERS[user_id]["invites"]), "predictions": USERS[user_id].get("predictions", {})
-    }
-
-@app.get("/api/matches")
-async def fetch_matches_manifest():
-    return {"matches": MATCHES}
-
-@app.post("/api/predict")
-async def process_prediction_lock(request: Request):
-    payload = await request.json()
-    uid, mid = str(payload.get('user_id')), str(payload.get('match_id'))
-    sa, sb, wager = int(payload.get('score_a')), int(payload.get('score_b')), float(payload.get('amount'))
+        return {"balance": 0.0, "invites": [], "invite_count": 0, "withdrawals": [], "has_new_tasks": False}
     
-    if uid not in USERS or mid not in MATCHES: raise HTTPException(status_code=400, detail="Node missing error")
-    m = MATCHES[mid]
-    if time.time() >= m["start_time"] or USERS[uid]["balance"] < wager or wager <= 0 or m["settled"]:
-        return {"status": "error", "message": "Transaction declined. System configuration locked / timeline past context expiration."}
-        
-    USERS[uid]["balance"] -= wager
-    USERS[uid].setdefault("predictions", {})[mid] = {
-        "score_a": sa, "score_b": sb, "amount": wager, "status": "pending", "timestamp": time.time()
+    user_tasks = USERS[user_id].get("tasks", [])
+    has_new = any(ch for ch, d in CHANNELS.items() if not d["is_force_join"] and ch not in user_tasks)
+    
+    return {
+        "balance": USERS[user_id]["balance"],
+        "invites": USERS[user_id]["invites"],
+        "invite_count": len(USERS[user_id]["invites"]),
+        "withdrawals": USERS[user_id].get("withdrawals", [])[::-1],
+        "has_new_tasks": has_new
     }
-    return {"status": "success", "new_balance": USERS[uid]["balance"]}
 
 @app.get("/api/tasks/{user_id}")
-async def fetch_quests_manifest(user_id: str):
-    completed = USERS.get(user_id, {}).get("tasks", [])
-    active = [{"channel": c, "reward": d["reward"]} for c, d in CHANNELS.items() if not d.get("is_force_join") and c not in completed]
-    return {"tasks": active}
+async def get_user_tasks(user_id: str):
+    user_tasks = USERS.get(user_id, {}).get("tasks", [])
+    active_tasks = [{"channel": ch, "reward": d["reward"]} for ch, d in CHANNELS.items() if not d["is_force_join"] and ch not in user_tasks]
+    return {"tasks": active_tasks}
 
 @app.post("/api/check_task")
-async def verify_quest_parameters(request: Request):
-    payload = await request.json()
-    uid, ch = str(payload['user_id']), payload['channel']
-    if ch not in CHANNELS or uid not in USERS or ch in USERS[uid].get("tasks", []):
-        return {"status": "error", "message": "State logic error. Action impossible."}
+async def api_check_task(request: Request):
+    data = await request.json()
+    u_id, channel = str(data['user_id']), data['channel']
+    
+    if channel not in CHANNELS: 
+        return {"status": "error", "message": "Configuration element missing."}
+    if u_id not in USERS: 
+        return {"status": "error", "message": "User sequence identification failure."}
+    if channel in USERS[u_id].get("tasks", []): 
+        return {"status": "error", "message": "Task already verified."}
+        
     try:
-        status = await bot.get_chat_member(chat_id=ch, user_id=int(uid))
-        if status.status in ['left', 'kicked']: return {"status": "error", "message": "Channel structural verification missing."}
-        rw = CHANNELS[ch]["reward"]
-        USERS[uid]["balance"] += rw
-        USERS[uid]["tasks"].append(ch)
-        return {"status": "success", "reward": rw, "new_balance": USERS[uid]["balance"]}
-    except:
-        return {"status": "error", "message": "Ecosystem API tracking layer breakdown."}
+        status = await bot.get_chat_member(chat_id=channel, user_id=int(u_id))
+        if status.status in ['left', 'kicked']: 
+            return {"status": "error", "message": "You are not indexed as an active subscriber to this node."}
+            
+        reward = CHANNELS[channel]["reward"]
+        USERS[u_id]["balance"] += reward
+        USERS[u_id]["tasks"].append(channel)
+        return {"status": "success", "reward": reward, "new_balance": USERS[u_id]["balance"]}
+    except: 
+        return {"status": "error", "message": "System integrity check error."}
 
 @app.get("/api/leaderboard")
-async def serve_leaderboard_ledger():
-    sorted_p = sorted(USERS.items(), key=lambda x: (x[1].get("exact_wins", 0), x[1].get("total_wins", 0)), reverse=True)[:50]
-    sorted_r = sorted(USERS.items(), key=lambda x: len(x[1].get("invites", [])), reverse=True)[:50]
+async def get_leaderboard():
+    # Top 100 entries mapping index
+    sorted_users = sorted(USERS.items(), key=lambda x: len(x[1]["invites"]), reverse=True)[:100]
+    return {
+        "leaders": [{"name": u[1]["first_name"], "invites": len(u[1]["invites"]), "reward": len(u[1]["invites"])*0.2} for u in sorted_users if len(u[1]["invites"]) > 0],
+        "recent": APPROVED_WITHDRAWALS[-10:] 
+    }
+
+@app.post("/api/withdraw")
+async def api_withdraw(request: Request):
+    global TOTAL_POOL
+    data = await request.json()
+    u_id, amt = str(data['user_id']), float(data['amount'])
     
-    predictors = [{"name": u[1]["first_name"], "exact": u[1].get("exact_wins", 0), "total": u[1].get("total_wins", 0)} for u in sorted_p]
-    referrers = [{"name": u[1]["first_name"], "count": len(u[1].get("invites", []))} for u in sorted_r]
-    return {"predictors": predictors, "referrers": referrers}
+    if u_id not in USERS or USERS[u_id]['balance'] < amt: 
+        return {"status": "error", "message": "Insufficient account liquid value"}
+        
+    if TOTAL_POOL < amt:
+        return {"status": "error", "message": "Global reward distribution pool exhausted. Please await admin refill."}
+        
+    req_id = f"req_{int(time.time()*1000)}" 
+    USERS[u_id]['balance'] -= amt
+    
+    w_data = {"id": req_id, "amount": amt, "address": data['address'], "status": "Pending", "date": time.strftime("%Y-%m-%d %H:%M")}
+    USERS[u_id].setdefault("withdrawals", []).append(w_data)
+    
+    data['user_id'] = u_id
+    withdrawal_requests[req_id] = data
+    
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(text="✅ Approve", callback_data=f"approve_{req_id}"), 
+            InlineKeyboardButton(text="❌ Reject", callback_data=f"reject_{req_id}")
+        ]
+    ])
+    
+    await bot.send_message(
+        ADMIN_ID, 
+        f"🔔 <b>New Withdrawal Event Requested:</b>\n👤 User: <code>{u_id}</code>\n💰 Amount: {amt} TON\n👛 Wallet: <code>{data['address']}</code>", 
+        reply_markup=kb
+    )
+    return {"status": "success"}
 
 @app.on_event("startup")
-async def on_startup_pipeline():
+async def on_startup():
+    asyncio.create_task(update_ton_price())
     asyncio.create_task(dp.start_polling(bot))
-
-if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

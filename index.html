@@ -69,346 +69,86 @@
             border-bottom: 1px solid var(--border);
         }
 
-        .logo {
-            display: flex; align-items: center; gap: 8px;
-        }
-        .logo-icon {
-            width: 32px; height: 32px;
-            background: linear-gradient(135deg, var(--primary), #4F8FC0);
-            border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 14px;
-        }
-        .logo-text {
-            font-weight: 700; font-size: 1.05rem; letter-spacing: -0.3px;
-            color: var(--text);
-        }
+        .logo { display: flex; align-items: center; gap: 8px; }
+        .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--primary), #4F8FC0); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .logo-text { font-weight: 700; font-size: 1.05rem; letter-spacing: -0.3px; color: var(--text); }
         .logo-text span { color: var(--primary); }
 
-        .live-pill {
-            display: flex; align-items: center; gap: 6px;
-            padding: 5px 12px;
-            background: var(--green-dim);
-            border: 1px solid rgba(74,222,128,0.2);
-            border-radius: 20px;
-            font-size: 0.78rem; font-weight: 600; color: var(--green);
-            font-family: var(--mono);
-        }
-        .live-dot {
-            width: 6px; height: 6px;
-            background: var(--green);
-            border-radius: 50%;
-            animation: blink 1.6s ease-in-out infinite;
-        }
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
+        .live-pill { display: flex; align-items: center; gap: 6px; padding: 5px 12px; background: var(--green-dim); border: 1px solid rgba(74,222,128,0.2); border-radius: 20px; font-size: 0.78rem; font-weight: 600; color: var(--green); font-family: var(--mono); }
+        .live-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: blink 1.6s ease-in-out infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
         /* ── PAGE WRAPPER ── */
         .page { padding: 20px; position: relative; z-index: 1; }
         .page.hidden { display: none !important; }
 
         /* ── POOL HERO ── */
-        .pool-hero {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 28px 24px;
-            margin-bottom: 16px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        .pool-hero::before {
-            content: '';
-            position: absolute; top: 0; left: 0; right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--primary), transparent);
-        }
-        .pool-label {
-            font-size: 0.75rem; font-weight: 500; letter-spacing: 2px;
-            color: var(--text-dim); text-transform: uppercase; margin-bottom: 12px;
-        }
-        .pool-number {
-            font-family: var(--mono);
-            font-size: 3rem; font-weight: 700;
-            color: var(--text);
-            line-height: 1;
-            margin-bottom: 6px;
-        }
+        .pool-hero { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 28px 24px; margin-bottom: 16px; text-align: center; position: relative; overflow: hidden; }
+        .pool-hero::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--primary), transparent); }
+        .pool-label { font-size: 0.75rem; font-weight: 500; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 12px; }
+        .pool-number { font-family: var(--mono); font-size: 3rem; font-weight: 700; color: var(--text); line-height: 1; margin-bottom: 6px; }
         .pool-number span { color: var(--primary); }
-        .pool-usd {
-            font-size: 0.85rem; color: var(--text-dim); font-weight: 500;
-            background: var(--surface-2);
-            padding: 4px 14px; border-radius: 20px;
-            display: inline-block;
-            border: 1px solid var(--border);
-        }
-
-        /* ── LIVE ACTIVITY BOX ── */
-        .live-activity-box {
-            background: linear-gradient(90deg, rgba(74, 222, 128, 0.08), transparent);
-            border: 1px solid rgba(74, 222, 128, 0.2);
-            border-radius: 16px;
-            padding: 14px 18px;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .live-activity-icon {
-            width: 10px; height: 10px;
-            background: var(--green);
-            border-radius: 50%;
-            box-shadow: 0 0 10px var(--green);
-            animation: pulse-glow 1.5s infinite;
-            flex-shrink: 0;
-        }
-        .live-activity-text {
-            font-size: 0.85rem;
-            color: #D1D5DB;
-        }
-        .live-activity-text strong {
-            color: var(--green);
-            font-family: var(--mono);
-            font-size: 0.95rem;
-        }
-        @keyframes pulse-glow {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(74,222,128,0.7); }
-            70% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(74,222,128,0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(74,222,128,0); }
-        }
+        .pool-usd { font-size: 0.85rem; color: var(--text-dim); font-weight: 500; background: var(--surface-2); padding: 4px 14px; border-radius: 20px; display: inline-block; border: 1px solid var(--border); }
 
         /* ── BALANCE CARD ── */
-        .balance-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 16px;
-        }
-        .balance-row {
-            display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 20px; padding-bottom: 20px;
-            border-bottom: 1px solid var(--border);
-        }
-        .balance-label {
-            font-size: 0.8rem; font-weight: 500; color: var(--text-dim);
-            text-transform: uppercase; letter-spacing: 1px;
-        }
-        .balance-value {
-            font-family: var(--mono);
-            font-size: 1.6rem; font-weight: 700; color: var(--text);
-        }
+        .balance-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 16px; }
+        .balance-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
+        .balance-label { font-size: 0.8rem; font-weight: 500; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+        .balance-value { font-family: var(--mono); font-size: 1.6rem; font-weight: 700; color: var(--text); }
         .balance-value em { color: var(--primary); font-style: normal; font-size: 1rem; }
 
         /* ── WITHDRAW LOCKED / UNLOCKED ── */
-        .locked-state {
-            display: flex; align-items: center; gap: 14px;
-            background: var(--surface-2);
-            border: 1px solid rgba(248,113,113,0.18);
-            border-radius: 14px;
-            padding: 16px;
-            position: relative;
-            overflow: hidden;
-        }
-        .locked-state::after {
-            content: ''; position: absolute; top:0; left:0; width: 4px; height: 100%;
-            background: var(--red);
-        }
+        .locked-state { display: flex; align-items: center; gap: 14px; background: var(--surface-2); border: 1px solid rgba(248,113,113,0.18); border-radius: 14px; padding: 16px; position: relative; overflow: hidden; }
+        .locked-state::after { content: ''; position: absolute; top:0; left:0; width: 4px; height: 100%; background: var(--red); }
         .locked-icon { font-size: 1.4rem; color: var(--red); flex-shrink: 0; }
         .locked-text { font-size: 0.85rem; color: #E8EAED; line-height: 1.5; }
         .locked-text strong { color: var(--primary); }
-        .progress-bar-wrap {
-            height: 4px; background: rgba(255,255,255,0.05);
-            border-radius: 4px; margin-top: 12px;
-        }
-        .progress-bar-fill {
-            height: 100%; background: linear-gradient(90deg, var(--red), var(--primary));
-            border-radius: 4px; transition: width 0.5s ease;
-        }
+        .progress-bar-wrap { height: 4px; background: rgba(255,255,255,0.05); border-radius: 4px; margin-top: 12px; }
+        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--red), var(--primary)); border-radius: 4px; transition: width 0.5s ease; }
 
-        .unlocked-actions {
-            display: flex; flex-direction: column; gap: 12px;
-        }
-        .crash-transfer-btn {
-            background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(99,179,255,0.15));
-            border: 1px solid rgba(168,85,247,0.3);
-            border-radius: 14px;
-            padding: 14px;
-            color: #E8EAED;
-            font-family: var(--font);
-            font-size: 0.9rem; font-weight: 600;
-            cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            transition: all 0.2s;
-        }
+        .unlocked-actions { display: flex; flex-direction: column; gap: 12px; }
+        .crash-transfer-btn { background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(99,179,255,0.15)); border: 1px solid rgba(168,85,247,0.3); border-radius: 14px; padding: 14px; color: #E8EAED; font-family: var(--font); font-size: 0.9rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
         .crash-transfer-btn:active { transform: scale(0.98); }
         .crash-transfer-btn span { color: #C084FC; }
 
         /* ── FORM INPUTS ── */
         .input-group { margin-bottom: 12px; }
-        .input-label {
-            display: block; font-size: 0.78rem; font-weight: 600;
-            color: var(--text-dim); letter-spacing: 0.5px;
-            margin-bottom: 6px; text-transform: uppercase;
-        }
-        input[type="number"], input[type="text"] {
-            width: 100%; padding: 14px 16px;
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            color: var(--text);
-            font-family: var(--font);
-            font-size: 0.95rem;
-            outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
+        .input-label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-dim); letter-spacing: 0.5px; margin-bottom: 6px; text-transform: uppercase; }
+        input[type="number"], input[type="text"] { width: 100%; padding: 14px 16px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-family: var(--font); font-size: 0.95rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
         input::placeholder { color: var(--muted); }
-        input:focus {
-            border-color: var(--border-active);
-            box-shadow: 0 0 0 3px rgba(99,179,255,0.08);
-        }
+        input:focus { border-color: var(--border-active); box-shadow: 0 0 0 3px rgba(99,179,255,0.08); }
 
         /* ── HOLD BUTTON ── */
-        .hold-wrap {
-            position: relative; border-radius: 14px; overflow: hidden;
-            margin-top: 16px; cursor: pointer;
-        }
-        .hold-fill {
-            position: absolute; top: 0; left: 0; height: 100%;
-            background: linear-gradient(90deg, var(--green), #22C55E);
-            width: 0%; transition: width 0.08s linear;
-            z-index: 1;
-        }
-        .hold-btn {
-            position: relative; z-index: 2;
-            width: 100%; padding: 16px;
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            color: var(--text);
-            font-family: var(--font);
-            font-size: 0.95rem; font-weight: 600;
-            cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            user-select: none; -webkit-user-select: none;
-        }
+        .hold-wrap { position: relative; border-radius: 14px; overflow: hidden; margin-top: 16px; cursor: pointer; }
+        .hold-fill { position: absolute; top: 0; left: 0; height: 100%; background: linear-gradient(90deg, var(--green), #22C55E); width: 0%; transition: width 0.08s linear; z-index: 1; }
+        .hold-btn { position: relative; z-index: 2; width: 100%; padding: 16px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 14px; color: var(--text); font-family: var(--font); font-size: 0.95rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; user-select: none; -webkit-user-select: none; }
 
         /* ── SQUAD / INVITE ── */
-        .squad-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 16px;
-        }
-        .squad-header {
-            display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 18px;
-        }
+        .squad-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 16px; }
+        .squad-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
         .squad-title { font-weight: 700; font-size: 1rem; }
-        .squad-count {
-            font-family: var(--mono); font-size: 0.85rem;
-            background: var(--primary-dim);
-            color: var(--primary);
-            padding: 4px 10px; border-radius: 8px;
-            font-weight: 700;
-        }
-        .invite-btn {
-            width: 100%; padding: 14px;
-            background: var(--primary-dim);
-            border: 1px solid var(--border-active);
-            border-radius: 12px;
-            color: var(--primary);
-            font-family: var(--font);
-            font-size: 0.95rem; font-weight: 600;
-            cursor: pointer; margin-bottom: 18px;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
-        .friend-item {
-            display: flex; align-items: center; gap: 12px;
-            padding: 12px 0; border-bottom: 1px solid var(--border);
-        }
-        .friend-item:last-child { border-bottom: none; }
-        .friend-avatar {
-            width: 40px; height: 40px; border-radius: 12px;
-            background: var(--surface-2); display: flex; align-items: center; justify-content: center;
-            font-size: 1rem; font-weight: 700; color: var(--primary); border: 1px solid var(--border); flex-shrink: 0;
-        }
-        .friend-name { font-weight: 600; font-size: 0.9rem; }
-        .friend-reward { font-family: var(--mono); font-size: 0.82rem; color: var(--green); margin-left: auto; font-weight: 700; }
-
-        /* ── CRASH GAME TAB (KHAFAN STYLE) ── */
-        .crash-history {
-            display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 16px;
-        }
-        .crash-history::-webkit-scrollbar { display: none; }
-        .crash-badge {
-            padding: 6px 12px; border-radius: 8px; font-family: var(--mono); font-size: 0.8rem; font-weight: 700;
-            background: var(--surface-2); border: 1px solid var(--border); flex-shrink: 0;
-        }
-        .crash-badge.good { color: var(--green); border-color: rgba(74,222,128,0.3); }
-        .crash-badge.bad { color: var(--red); border-color: rgba(248,113,113,0.3); }
-
-        .crash-board {
-            background: radial-gradient(circle at center, #1e293b 0%, #060810 100%);
-            border: 1px solid rgba(168,85,247,0.3);
-            border-radius: 20px;
-            height: 260px;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            position: relative; overflow: hidden;
-            box-shadow: 0 0 30px rgba(168,85,247,0.05);
-            margin-bottom: 20px;
-        }
-        .crash-curve-wrap {
-            position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
-            display: flex; align-items: flex-end; z-index: 1;
-        }
-        .crash-curve {
-            width: 100%; height: 0%;
-            background: linear-gradient(to top, rgba(168,85,247,0.2), transparent);
-            border-top: 2px solid #C084FC;
-            box-shadow: 0 -10px 20px rgba(168,85,247,0.2);
-            transition: height 0.1s linear;
-        }
-        .crash-multiplier {
-            font-size: 4.5rem; font-family: var(--mono); font-weight: 700; color: #fff;
-            z-index: 2; text-shadow: 0 0 20px rgba(255,255,255,0.3);
-            transition: color 0.2s;
-        }
-        .crash-status {
-            font-size: 0.9rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px;
-            z-index: 2; margin-top: 10px; font-weight: 600;
-        }
-
-        .crash-controls {
-            background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 20px;
-        }
+        .squad-count { font-family: var(--mono); font-size: 0.85rem; background: var(--primary-dim); color: var(--primary); padding: 4px 10px; border-radius: 8px; font-weight: 700; }
+        .invite-btn { width: 100%; padding: 14px; background: var(--primary-dim); border: 1px solid var(--border-active); border-radius: 12px; color: var(--primary); font-family: var(--font); font-size: 0.95rem; font-weight: 600; cursor: pointer; margin-bottom: 18px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        
+        /* ── CRASH GAME TAB ── */
+        .crash-board { background: radial-gradient(circle at center, #1e293b 0%, #060810 100%); border: 1px solid rgba(168,85,247,0.3); border-radius: 20px; height: 260px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; box-shadow: 0 0 30px rgba(168,85,247,0.05); margin-bottom: 20px; }
+        .crash-curve-wrap { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: flex-end; z-index: 1; }
+        .crash-curve { width: 100%; height: 0%; background: linear-gradient(to top, rgba(168,85,247,0.2), transparent); border-top: 2px solid #C084FC; box-shadow: 0 -10px 20px rgba(168,85,247,0.2); transition: height 0.1s linear; }
+        .crash-multiplier { font-size: 4.5rem; font-family: var(--mono); font-weight: 700; color: #fff; z-index: 2; text-shadow: 0 0 20px rgba(255,255,255,0.3); transition: color 0.2s; }
+        .crash-status { font-size: 0.9rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; z-index: 2; margin-top: 10px; font-weight: 600; }
+        .crash-controls { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 20px; }
         .bet-row { display: flex; gap: 12px; margin-bottom: 16px; }
         .bet-input-wrap { flex: 1; position: relative; }
         .bet-input-wrap input { padding-right: 45px; }
-        .bet-currency {
-            position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
-            font-size: 0.8rem; font-weight: 700; color: var(--primary);
-        }
-        .btn-bet {
-            width: 100%; padding: 16px; border: none; border-radius: 14px;
-            font-family: var(--font); font-size: 1rem; font-weight: 700; cursor: pointer;
-            transition: all 0.2s; text-transform: uppercase; letter-spacing: 1px;
-        }
+        .bet-currency { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 0.8rem; font-weight: 700; color: var(--primary); }
+        .btn-bet { width: 100%; padding: 16px; border: none; border-radius: 14px; font-family: var(--font); font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 1px; }
         .btn-bet.place { background: var(--primary); color: #000; box-shadow: 0 4px 15px rgba(99,179,255,0.3); }
         .btn-bet.cashout { background: var(--green); color: #000; box-shadow: 0 4px 15px rgba(74,222,128,0.3); }
         .btn-bet.disabled { background: var(--surface-2); color: var(--muted); cursor: not-allowed; box-shadow: none; }
 
         /* ── TASKS & OTHERS ── */
-        .task-item {
-            display: flex; align-items: center; justify-content: space-between;
-            background: var(--surface-2); border: 1px solid var(--border); border-radius: 14px;
-            padding: 16px; margin-bottom: 10px;
-        }
-        .task-icon { width: 42px; height: 42px; border-radius: 12px; background: var(--primary-dim); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: var(--primary); flex-shrink: 0; margin-right: 12px; }
+        .task-item { display: flex; align-items: center; justify-content: space-between; background: var(--surface-2); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 10px; }
+        .task-icon { width: 42px; height: 42px; border-radius: 12px; background: var(--primary-dim); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; margin-right: 12px; }
         .task-name { font-weight: 600; font-size: 0.9rem; }
         .task-reward { font-size: 0.8rem; color: var(--green); font-weight: 600; margin-top: 2px; font-family: var(--mono); }
         .task-actions { display: flex; gap: 8px; flex-shrink: 0; }
@@ -428,15 +168,8 @@
         .section-card-title { font-weight: 700; font-size: 1rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
 
         /* ── BOTTOM NAV ── */
-        .bottom-nav {
-            position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
-            display: flex; background: rgba(6,8,16,0.92); backdrop-filter: blur(20px); border-top: 1px solid var(--border); padding: 0;
-        }
-        .nav-tab {
-            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-            gap: 4px; padding: 12px 0 16px; color: var(--text-dim); cursor: pointer; position: relative;
-            transition: color 0.2s; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.3px;
-        }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; display: flex; background: rgba(6,8,16,0.92); backdrop-filter: blur(20px); border-top: 1px solid var(--border); padding: 0; }
+        .nav-tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 12px 0 16px; color: var(--text-dim); cursor: pointer; position: relative; transition: color 0.2s; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.3px; }
         .nav-tab svg { width: 22px; height: 22px; stroke-width: 1.8; }
         .nav-tab.active { color: var(--primary); }
         .nav-tab.active::before { content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 2px; background: var(--primary); border-radius: 0 0 2px 2px; }
@@ -449,7 +182,6 @@
 </head>
 <body>
 
-<!-- TOP BAR -->
 <div class="topbar">
     <div class="logo">
         <div class="logo-icon">💎</div>
@@ -457,30 +189,18 @@
     </div>
     <div class="live-pill">
         <div class="live-dot"></div>
-        <span id="online-count">1,024</span> Online
+        <span id="online-count">0</span> Online
     </div>
 </div>
 
-<!-- MAIN TAB -->
 <div class="page fade-up" id="tab-main">
-
-    <!-- Pool Hero -->
     <div class="pool-hero">
         <div class="pool-label">Total Reward Pool</div>
-        <div class="pool-number"><span id="pool-amount">15,400</span> <span style="color:var(--primary)">TON</span></div>
+        <div class="pool-number"><span id="pool-amount">0</span> <span style="color:var(--primary)">TON</span></div>
         <br>
-        <div class="pool-usd" id="usd-value">≈ $107,800 USD</div>
+        <div class="pool-usd" id="usd-value">≈ $0 USD</div>
     </div>
 
-    <!-- Live Activity Box (Dynamic) -->
-    <div class="live-activity-box">
-        <div class="live-activity-icon"></div>
-        <div class="live-activity-text">
-            <strong id="live-withdraw-count">142</strong> users are actively withdrawing right now!
-        </div>
-    </div>
-
-    <!-- Balance + Withdraw -->
     <div class="balance-card">
         <div class="balance-row">
             <div>
@@ -489,7 +209,6 @@
             </div>
         </div>
 
-        <!-- Locked state -->
         <div id="withdraw-locked" class="locked-state">
             <div class="locked-icon">🔒</div>
             <div class="locked-text" style="flex:1">
@@ -500,12 +219,10 @@
             </div>
         </div>
 
-        <!-- Unlocked state -->
         <div id="withdraw-unlocked" class="hidden unlocked-actions">
             <div style="font-size:0.85rem; color:var(--green); font-weight:600; margin-bottom: 8px;">
                 ✅ Wallet Unlocked! Withdraw or Multiply in Crash.
             </div>
-
             <div style="background:var(--surface-2); padding:16px; border-radius:14px; border:1px solid var(--border);">
                 <div class="input-group">
                     <label class="input-label">Amount (min 1.0 TON)</label>
@@ -523,52 +240,32 @@
                     </button>
                 </div>
             </div>
-
             <div class="crash-transfer-btn" onclick="switchTab('crash')">
                 <span>🚀</span> Play Crash & Multiply Balance
             </div>
         </div>
     </div>
 
-    <!-- Squad / Invite -->
     <div class="squad-card">
         <div class="squad-header">
             <div class="squad-title">Earn TON via Referrals</div>
             <div class="squad-count" id="invite-count">0 friends</div>
         </div>
-        <p style="font-size:0.83rem; color:var(--text-dim); margin-top:0; margin-bottom:16px;">
-            Invite friends to earn direct TON rewards and unlock your wallet features.
-        </p>
         <button class="invite-btn" onclick="copyInviteLink()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
             Copy Invite Link
         </button>
-        <div id="invite-list">
-            <div class="empty-state" style="padding:16px;">
-                <div style="font-size:1.5rem;margin-bottom:6px;">👥</div>
-                No friends invited yet
-            </div>
-        </div>
     </div>
 </div>
 
-<!-- CRASH TAB (NEW) -->
 <div class="page hidden" id="tab-crash">
     <div class="section-card fade-up" style="padding: 16px; margin-bottom: 16px;">
-        <div class="crash-history" id="crash-history">
-            <div class="crash-badge bad">1.12x</div>
-            <div class="crash-badge good">2.45x</div>
-            <div class="crash-badge good">5.10x</div>
-            <div class="crash-badge bad">1.05x</div>
-            <div class="crash-badge good">3.20x</div>
-        </div>
-
         <div class="crash-board">
             <div class="crash-curve-wrap">
                 <div class="crash-curve" id="crash-curve"></div>
             </div>
             <div class="crash-multiplier" id="crash-multiplier">1.00x</div>
-            <div class="crash-status" id="crash-status">Waiting for next round...</div>
+            <div class="crash-status" id="crash-status">Loading...</div>
         </div>
 
         <div class="crash-controls">
@@ -587,7 +284,6 @@
     </div>
 </div>
 
-<!-- TASKS TAB -->
 <div class="page hidden" id="tab-tasks">
     <div class="section-card fade-up">
         <div class="section-card-title">
@@ -602,7 +298,6 @@
     </div>
 </div>
 
-<!-- LEADERBOARD TAB -->
 <div class="page hidden" id="tab-leaderboard">
     <div class="section-card fade-up">
         <div class="section-card-title"><span>🏆</span> Top Inviters</div>
@@ -610,7 +305,6 @@
     </div>
 </div>
 
-<!-- BOTTOM NAV (UPDATED WITH CRASH) -->
 <div class="bottom-nav">
     <div class="nav-tab active" id="nav-main" onclick="switchTab('main')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
@@ -636,9 +330,13 @@
     tg.setHeaderColor('#060810');
     tg.setBackgroundColor('#060810');
 
+    // Using real User ID from Telegram
     const userId = tg.initDataUnsafe?.user?.id?.toString() || '0';
-    let inviteCount = 0;
+    
     let userBalance = 0.00;
+    let inviteCount = 0;
+    let crashState = 'waiting';
+    let betPlaced = false;
 
     /* ── TAB SWITCHING ── */
     function switchTab(name) {
@@ -646,159 +344,21 @@
             document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== name);
             document.getElementById(`nav-${t}`).classList.toggle('active', t === name);
         });
-        if(name === 'crash') updateCrashBalanceUI();
         tg.HapticFeedback.selectionChanged();
     }
 
-    /* ── DYNAMIC LIVE PAYOUTS COUNTER ── */
-    let liveWithdrawCount = 142;
-    setInterval(() => {
-        // Randomly change the number of active withdrawers slightly
-        const change = Math.floor(Math.random() * 5) - 2; // -2 to +2
-        liveWithdrawCount = Math.max(80, liveWithdrawCount + change);
-        document.getElementById('live-withdraw-count').textContent = liveWithdrawCount;
-    }, 3500);
-
-    /* ── CRASH GAME LOGIC ── */
-    let crashState = 'waiting'; // waiting, running, crashed
-    let currentMultiplier = 1.00;
-    let crashPoint = 0;
-    let currentBet = 0;
-    let betPlaced = false;
-    let crashInterval;
-
-    function updateCrashBalanceUI() {
-        document.getElementById('crash-user-balance').textContent = userBalance.toFixed(2);
-    }
-
-    function handleCrashAction() {
-        const btn = document.getElementById('btn-crash-action');
-        
-        if (crashState === 'waiting') {
-            if (!betPlaced) {
-                const betInput = parseFloat(document.getElementById('crash-bet-amount').value);
-                if (isNaN(betInput) || betInput <= 0 || betInput > userBalance) {
-                    tg.showAlert('Invalid bet amount or insufficient balance!');
-                    return;
-                }
-                userBalance -= betInput;
-                currentBet = betInput;
-                betPlaced = true;
-                
-                document.getElementById('user-balance').textContent = userBalance.toFixed(2);
-                updateCrashBalanceUI();
-                
-                btn.className = 'btn-bet disabled';
-                btn.textContent = 'Waiting for round...';
-                tg.HapticFeedback.impactOccurred('light');
-            }
-        } else if (crashState === 'running') {
-            if (betPlaced) {
-                // Cashout
-                const winAmount = currentBet * currentMultiplier;
-                userBalance += winAmount;
-                betPlaced = false;
-                
-                document.getElementById('user-balance').textContent = userBalance.toFixed(2);
-                updateCrashBalanceUI();
-                
-                btn.className = 'btn-bet disabled';
-                btn.textContent = `Cashed out: ${winAmount.toFixed(2)} TON`;
-                tg.HapticFeedback.notificationOccurred('success');
-            }
-        }
-    }
-
-    function startCrashRound() {
-        crashState = 'running';
-        currentMultiplier = 1.00;
-        // Random crash point (e.g., heavily weighted towards lower numbers)
-        crashPoint = 1.00 + Math.pow(Math.random(), 3) * 10; 
-        
-        document.getElementById('crash-multiplier').style.color = '#fff';
-        document.getElementById('crash-status').textContent = 'Graph is flying!';
-        
-        const btn = document.getElementById('btn-crash-action');
-        if (betPlaced) {
-            btn.className = 'btn-bet cashout';
-            btn.textContent = 'Cash Out';
-        } else {
-            btn.className = 'btn-bet disabled';
-            btn.textContent = 'Wait for next round';
-        }
-
-        clearInterval(crashInterval);
-        crashInterval = setInterval(() => {
-            currentMultiplier += 0.01 + (currentMultiplier * 0.005);
-            
-            if (currentMultiplier >= crashPoint) {
-                endCrashRound();
-            } else {
-                document.getElementById('crash-multiplier').textContent = currentMultiplier.toFixed(2) + 'x';
-                // Update graph height visually
-                const h = Math.min(100, ((currentMultiplier - 1) / 3) * 100);
-                document.getElementById('crash-curve').style.height = `${h}%`;
-                
-                if(betPlaced && btn.className.includes('cashout')) {
-                    btn.textContent = `Cash Out ${(currentBet * currentMultiplier).toFixed(2)}`;
-                }
-            }
-        }, 50);
-    }
-
-    function endCrashRound() {
-        clearInterval(crashInterval);
-        crashState = 'crashed';
-        currentMultiplier = crashPoint;
-        betPlaced = false;
-        
-        document.getElementById('crash-multiplier').textContent = currentMultiplier.toFixed(2) + 'x';
-        document.getElementById('crash-multiplier').style.color = 'var(--red)';
-        document.getElementById('crash-status').textContent = 'Crashed!';
-        document.getElementById('crash-curve').style.height = '0%';
-        
-        const btn = document.getElementById('btn-crash-action');
-        btn.className = 'btn-bet disabled';
-        btn.textContent = 'Crashed';
-        tg.HapticFeedback.notificationOccurred('error');
-
-        // Add to history
-        const histDiv = document.getElementById('crash-history');
-        const badge = document.createElement('div');
-        badge.className = currentMultiplier >= 2.0 ? 'crash-badge good' : 'crash-badge bad';
-        badge.textContent = currentMultiplier.toFixed(2) + 'x';
-        histDiv.insertBefore(badge, histDiv.firstChild);
-
-        setTimeout(() => {
-            crashState = 'waiting';
-            document.getElementById('crash-status').textContent = 'Waiting for next round...';
-            document.getElementById('crash-multiplier').textContent = '1.00x';
-            document.getElementById('crash-multiplier').style.color = '#fff';
-            
-            btn.className = 'btn-bet place';
-            btn.textContent = 'Place Bet';
-            
-            setTimeout(startCrashRound, 3000);
-        }, 3000);
-    }
-    
-    // Auto-start the loop
-    setTimeout(startCrashRound, 2000);
-
-    /* ── DATA FETCHING (Mocked & Real API blend for demonstration) ── */
-    async function fetchAll() {
+    /* ── FETCH USER DATA ── */
+    async function fetchUserData() {
         try {
-            // Simulated User Data update
-            // Replace with actual API fetches as in original code
-            const mockUserBalance = 5.50; // Mock starting balance to test Crash
-            const mockInviteCount = 5;    // Set to 5 to unlock wallet
+            const res = await fetch(`/api/user/${userId}`);
+            const data = await res.json();
+            userBalance = data.balance || 0;
+            inviteCount = data.invite_count || 0;
 
-            userBalance = mockUserBalance;
-            inviteCount = mockInviteCount;
-            
             document.getElementById('user-balance').textContent = userBalance.toFixed(2);
+            document.getElementById('crash-user-balance').textContent = userBalance.toFixed(2);
             document.getElementById('invite-count').textContent = `${inviteCount} friends`;
-
+            
             const pct = Math.min((inviteCount / 5) * 100, 100);
             document.getElementById('lock-progress').style.width = pct + '%';
 
@@ -809,38 +369,185 @@
                 document.getElementById('withdraw-locked').classList.remove('hidden');
                 document.getElementById('withdraw-unlocked').classList.add('hidden');
             }
-
-            // Tasks Mock
-            document.getElementById('tasks-container').innerHTML = `
-                <div class="task-item" id="task-1">
-                    <div class="task-icon">📢</div>
-                    <div style="flex:1;min-width:0">
-                        <div class="task-name">Sponsor Channel</div>
-                        <div class="task-reward">+0.5 TON</div>
-                    </div>
-                    <div class="task-actions">
-                        <a href="#" class="btn-join">Join</a>
-                        <button class="btn-verify" onclick="tg.showAlert('Verified!')">Check</button>
-                    </div>
-                </div>`;
-            
-            // Leaderboard Mock
-            document.getElementById('top-inviters').innerHTML = `
-                <div class="leader-item rank-1">
-                    <div class="rank-num">🥇</div><div class="leader-avatar">A</div>
-                    <div><div class="leader-name">Alex</div><div class="leader-stat">120 friends invited</div></div>
-                    <div class="leader-reward">50.0 TON</div>
-                </div>
-                <div class="leader-item rank-2">
-                    <div class="rank-num">🥈</div><div class="leader-avatar">S</div>
-                    <div><div class="leader-name">Sam</div><div class="leader-stat">95 friends invited</div></div>
-                    <div class="leader-reward">35.0 TON</div>
-                </div>`;
-
-        } catch(e) { console.error(e); }
+        } catch (e) { console.error("Error fetching user data", e); }
     }
 
-    /* ── HOLD-TO-SUBMIT ── */
+    /* ── FETCH GLOBAL DATA ── */
+    async function fetchGlobalData() {
+        try {
+            const res = await fetch(`/api/data?user_id=${userId}`);
+            const data = await res.json();
+            document.getElementById('pool-amount').textContent = data.total_pool.toLocaleString();
+            document.getElementById('usd-value').textContent = `≈ $${(data.total_pool * data.ton_price).toLocaleString()} USD`;
+            document.getElementById('online-count').textContent = data.online_count;
+        } catch (e) { console.error("Error fetching global data", e); }
+    }
+
+    /* ── FETCH TASKS ── */
+    async function fetchTasks() {
+        try {
+            const res = await fetch(`/api/tasks/${userId}`);
+            const data = await res.json();
+            const container = document.getElementById('tasks-container');
+            
+            if (!data.tasks || data.tasks.length === 0) {
+                container.innerHTML = '<div class="empty-state">No available tasks right now. Check back later!</div>';
+                return;
+            }
+            
+            container.innerHTML = data.tasks.map((t, i) => `
+                <div class="task-item" id="task-${i}">
+                    <div class="task-icon">🐸</div>
+                    <div style="flex:1;min-width:0">
+                        <div class="task-name">${t.channel}</div>
+                        <div class="task-reward">+${t.reward} TON</div>
+                    </div>
+                    <div class="task-actions">
+                        <a href="https://t.me/${t.channel.replace('@', '')}" target="_blank" class="btn-join">Join</a>
+                        <button class="btn-verify" onclick="verifyTask('${t.channel}')">Check</button>
+                    </div>
+                </div>`).join('');
+        } catch (e) { console.error("Error fetching tasks", e); }
+    }
+
+    async function verifyTask(channel) {
+        try {
+            const res = await fetch('/api/check_task', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId, channel: channel })
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                tg.showAlert(`Verified! You earned ${data.reward} TON 💎`);
+                fetchUserData();
+                fetchTasks();
+            } else {
+                tg.showAlert(data.message || 'Verification failed. Make sure you joined the channel!');
+            }
+        } catch (e) { console.error(e); }
+    }
+
+    /* ── FETCH LEADERBOARD ── */
+    async function fetchLeaderboard() {
+        try {
+            const res = await fetch('/api/leaderboard');
+            const data = await res.json();
+            const container = document.getElementById('top-inviters');
+            
+            if (!data.leaders || data.leaders.length === 0) {
+                container.innerHTML = '<div class="empty-state">No leaders yet. Be the first!</div>';
+                return;
+            }
+            
+            container.innerHTML = data.leaders.map((l, i) => `
+                <div class="leader-item rank-${i+1}">
+                    <div class="rank-num">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
+                    <div class="leader-avatar">${l.name.charAt(0).toUpperCase()}</div>
+                    <div><div class="leader-name">${l.name}</div><div class="leader-stat" style="font-size:0.8rem;color:var(--text-dim)">${l.invites} friends</div></div>
+                    <div class="leader-reward">${l.reward.toFixed(2)} TON</div>
+                </div>`).join('');
+        } catch (e) { console.error("Error fetching leaderboard", e); }
+    }
+
+    /* ── CRASH GAME SYNC ── */
+    async function syncCrashState() {
+        try {
+            const res = await fetch(`/api/crash/state?user_id=${userId}`);
+            const data = await res.json();
+            
+            crashState = data.status;
+            const userBet = data.user_bet;
+            const btn = document.getElementById('btn-crash-action');
+
+            if (crashState === 'waiting') {
+                document.getElementById('crash-multiplier').textContent = data.time_left.toFixed(1) + 's';
+                document.getElementById('crash-multiplier').style.color = '#fff';
+                document.getElementById('crash-status').textContent = 'Next round starting...';
+                document.getElementById('crash-curve').style.height = '0%';
+
+                if (userBet) {
+                    btn.className = 'btn-bet disabled';
+                    btn.textContent = 'Bet Placed. Waiting...';
+                    betPlaced = true;
+                } else {
+                    btn.className = 'btn-bet place';
+                    btn.textContent = 'Place Bet';
+                    betPlaced = false;
+                }
+            } else if (crashState === 'flying') {
+                document.getElementById('crash-multiplier').textContent = data.multiplier.toFixed(2) + 'x';
+                document.getElementById('crash-status').textContent = 'Graph is flying!';
+                const h = Math.min(100, ((data.multiplier - 1) / 3) * 100);
+                document.getElementById('crash-curve').style.height = `${h}%`;
+
+                if (userBet && !userBet.cashed_out) {
+                    btn.className = 'btn-bet cashout';
+                    btn.textContent = `Cash Out ${(userBet.amount * data.multiplier).toFixed(2)}`;
+                    betPlaced = true;
+                } else if (userBet && userBet.cashed_out) {
+                    btn.className = 'btn-bet disabled';
+                    btn.textContent = `Cashed Out: +${userBet.profit} TON`;
+                    betPlaced = false;
+                } else {
+                    btn.className = 'btn-bet disabled';
+                    btn.textContent = 'Wait for next round';
+                    betPlaced = false;
+                }
+            } else if (crashState === 'crashed') {
+                document.getElementById('crash-multiplier').textContent = data.multiplier.toFixed(2) + 'x';
+                document.getElementById('crash-multiplier').style.color = 'var(--red)';
+                document.getElementById('crash-status').textContent = 'Crashed!';
+                document.getElementById('crash-curve').style.height = '0%';
+                btn.className = 'btn-bet disabled';
+                btn.textContent = 'Crashed';
+                betPlaced = false;
+            }
+        } catch (e) {}
+    }
+
+    async function handleCrashAction() {
+        if (crashState === 'waiting' && !betPlaced) {
+            const betInput = parseFloat(document.getElementById('crash-bet-amount').value);
+            if (isNaN(betInput) || betInput <= 0 || betInput > userBalance) {
+                tg.showAlert('Invalid bet amount or insufficient balance!');
+                return;
+            }
+            try {
+                const res = await fetch('/api/crash/bet', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, amount: betInput })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    tg.HapticFeedback.impactOccurred('light');
+                    fetchUserData();
+                    syncCrashState();
+                } else {
+                    tg.showAlert(data.message);
+                }
+            } catch (e) {}
+        } else if (crashState === 'flying' && betPlaced) {
+            try {
+                const res = await fetch('/api/crash/cashout', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId })
+                });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    tg.HapticFeedback.notificationOccurred('success');
+                    fetchUserData();
+                    syncCrashState();
+                } else {
+                    tg.showAlert(data.message);
+                }
+            } catch (e) {}
+        }
+    }
+
+    /* ── WITHDRAW HOLD LOGIC ── */
     const holdBtn = document.getElementById('hold-btn');
     const holdFill = document.getElementById('hold-progress');
     let holdTimer, progress = 0;
@@ -879,10 +586,22 @@
     async function submitWithdrawal(amount, address) {
         tg.HapticFeedback.notificationOccurred('success');
         holdBtn.style.pointerEvents = 'none';
-        tg.showPopup({title:'Request Submitted', message:`${amount} TON withdrawal is under review.`, buttons:[{type:'close'}]});
         
-        userBalance -= amount;
-        document.getElementById('user-balance').textContent = userBalance.toFixed(2);
+        try {
+            const res = await fetch('/api/withdraw', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId, amount: amount, address: address })
+            });
+            const data = await res.json();
+            
+            if (data.status === 'success') {
+                tg.showPopup({title:'Request Submitted', message:`${amount} TON withdrawal is under review.`, buttons:[{type:'close'}]});
+                fetchUserData();
+            } else {
+                tg.showAlert(data.message || 'Withdrawal error.');
+            }
+        } catch (e) { tg.showAlert('Network error.'); }
         
         progress = 0; holdFill.style.width = '0%';
         setTimeout(() => { holdBtn.style.pointerEvents = 'auto'; }, 3000);
@@ -894,8 +613,15 @@
         tg.showAlert('Invite link copied!');
     }
 
-    /* ── INIT ── */
-    fetchAll();
+    /* ── INIT & POLLING ── */
+    fetchUserData();
+    fetchGlobalData();
+    fetchTasks();
+    fetchLeaderboard();
+    
+    // Poll updates
+    setInterval(fetchGlobalData, 10000);
+    setInterval(syncCrashState, 300); // Fast polling for crash game sync
 </script>
 </body>
 </html>

@@ -3,562 +3,899 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GramGift - Hub & Pepe Crash</title>
+    <title>GramGift</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg: #060810;
+            --surface: #0d1117;
+            --surface-2: #131925;
+            --border: rgba(255,255,255,0.06);
+            --border-active: rgba(99,179,255,0.3);
+            --primary: #63B3FF;
+            --primary-dim: rgba(99,179,255,0.12);
+            --gold: #F4C542;
+            --gold-dim: rgba(244,197,66,0.12);
+            --green: #4ADE80;
+            --green-dim: rgba(74,222,128,0.12);
+            --red: #F87171;
+            --red-dim: rgba(248,113,113,0.12);
+            --muted: #4B5563;
+            --text: #E8EAED;
+            --text-dim: #6B7280;
+            --font: 'Space Grotesk', sans-serif;
+            --mono: 'Space Mono', monospace;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
         body {
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(180deg, #091a10 0%, #050b07 100%);
-            user-select: none;
-            -webkit-user-select: none;
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+            margin: 0;
+            padding: 0 0 88px 0;
+            min-height: 100vh;
             overflow-x: hidden;
         }
-        .crypto-card {
-            background: linear-gradient(135deg, rgba(16, 42, 26, 0.8) 0%, rgba(10, 25, 16, 0.6) 100%);
-            border: 1px solid rgba(34, 197, 94, 0.2);
-            backdrop-filter: blur(10px);
+
+        /* Ambient background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -200px; left: -200px;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(99,179,255,0.04) 0%, transparent 70%);
+            pointer-events: none; z-index: 0;
         }
-        .btn-pepe {
-            background: linear-gradient(90deg, #22c55e 0%, #15803d 100%);
-            box-shadow: 0 4px 14px rgba(34, 197, 94, 0.4);
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -100px; right: -100px;
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(244,197,66,0.03) 0%, transparent 70%);
+            pointer-events: none; z-index: 0;
         }
-        .btn-pepe:active {
-            transform: scale(0.98);
+
+        /* ── TOP BAR ── */
+        .topbar {
+            position: sticky; top: 0; z-index: 50;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px 20px;
+            background: rgba(6,8,16,0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
         }
-        /* Custom Scrollbar for Tasks/Logs */
-        ::-webkit-scrollbar {
-            width: 4px;
+
+        .logo {
+            display: flex; align-items: center; gap: 8px;
         }
-        ::-webkit-scrollbar-track {
-            background: rgba(0,0,0,0.1);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(34, 197, 94, 0.3);
+        .logo-icon {
+            width: 32px; height: 32px;
+            background: linear-gradient(135deg, var(--primary), #4F8FC0);
             border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px;
         }
-        /* Tab Navigation Active State */
-        .tab-btn.active {
-            color: #22c55e;
-            border-top: 2px solid #22c55e;
-            background: rgba(34, 197, 94, 0.05);
+        .logo-text {
+            font-weight: 700; font-size: 1.05rem; letter-spacing: -0.3px;
+            color: var(--text);
         }
+        .logo-text span { color: var(--primary); }
+
+        .live-pill {
+            display: flex; align-items: center; gap: 6px;
+            padding: 5px 12px;
+            background: var(--green-dim);
+            border: 1px solid rgba(74,222,128,0.2);
+            border-radius: 20px;
+            font-size: 0.78rem; font-weight: 600; color: var(--green);
+            font-family: var(--mono);
+        }
+        .live-dot {
+            width: 6px; height: 6px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: blink 1.6s ease-in-out infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* ── PAGE WRAPPER ── */
+        .page { padding: 20px; position: relative; z-index: 1; }
+        .page.hidden { display: none !important; }
+
+        /* ── POOL HERO ── */
+        .pool-hero {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 28px 24px;
+            margin-bottom: 16px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .pool-hero::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+        .pool-label {
+            font-size: 0.75rem; font-weight: 500; letter-spacing: 2px;
+            color: var(--text-dim); text-transform: uppercase; margin-bottom: 12px;
+        }
+        .pool-number {
+            font-family: var(--mono);
+            font-size: 3rem; font-weight: 700;
+            color: var(--text);
+            line-height: 1;
+            margin-bottom: 6px;
+        }
+        .pool-number span { color: var(--primary); }
+        .pool-usd {
+            font-size: 0.85rem; color: var(--text-dim); font-weight: 500;
+            background: var(--surface-2);
+            padding: 4px 14px; border-radius: 20px;
+            display: inline-block;
+            border: 1px solid var(--border);
+        }
+
+        /* ── LIVE ACTIVITY BOX ── */
+        .live-activity-box {
+            background: linear-gradient(90deg, rgba(74, 222, 128, 0.08), transparent);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+            border-radius: 16px;
+            padding: 14px 18px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .live-activity-icon {
+            width: 10px; height: 10px;
+            background: var(--green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--green);
+            animation: pulse-glow 1.5s infinite;
+            flex-shrink: 0;
+        }
+        .live-activity-text {
+            font-size: 0.85rem;
+            color: #D1D5DB;
+        }
+        .live-activity-text strong {
+            color: var(--green);
+            font-family: var(--mono);
+            font-size: 0.95rem;
+        }
+        @keyframes pulse-glow {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(74,222,128,0.7); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(74,222,128,0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(74,222,128,0); }
+        }
+
+        /* ── BALANCE CARD ── */
+        .balance-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .balance-row {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 20px; padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .balance-label {
+            font-size: 0.8rem; font-weight: 500; color: var(--text-dim);
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .balance-value {
+            font-family: var(--mono);
+            font-size: 1.6rem; font-weight: 700; color: var(--text);
+        }
+        .balance-value em { color: var(--primary); font-style: normal; font-size: 1rem; }
+
+        /* ── WITHDRAW LOCKED / UNLOCKED ── */
+        .locked-state {
+            display: flex; align-items: center; gap: 14px;
+            background: var(--surface-2);
+            border: 1px solid rgba(248,113,113,0.18);
+            border-radius: 14px;
+            padding: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+        .locked-state::after {
+            content: ''; position: absolute; top:0; left:0; width: 4px; height: 100%;
+            background: var(--red);
+        }
+        .locked-icon { font-size: 1.4rem; color: var(--red); flex-shrink: 0; }
+        .locked-text { font-size: 0.85rem; color: #E8EAED; line-height: 1.5; }
+        .locked-text strong { color: var(--primary); }
+        .progress-bar-wrap {
+            height: 4px; background: rgba(255,255,255,0.05);
+            border-radius: 4px; margin-top: 12px;
+        }
+        .progress-bar-fill {
+            height: 100%; background: linear-gradient(90deg, var(--red), var(--primary));
+            border-radius: 4px; transition: width 0.5s ease;
+        }
+
+        .unlocked-actions {
+            display: flex; flex-direction: column; gap: 12px;
+        }
+        .crash-transfer-btn {
+            background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(99,179,255,0.15));
+            border: 1px solid rgba(168,85,247,0.3);
+            border-radius: 14px;
+            padding: 14px;
+            color: #E8EAED;
+            font-family: var(--font);
+            font-size: 0.9rem; font-weight: 600;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: all 0.2s;
+        }
+        .crash-transfer-btn:active { transform: scale(0.98); }
+        .crash-transfer-btn span { color: #C084FC; }
+
+        /* ── FORM INPUTS ── */
+        .input-group { margin-bottom: 12px; }
+        .input-label {
+            display: block; font-size: 0.78rem; font-weight: 600;
+            color: var(--text-dim); letter-spacing: 0.5px;
+            margin-bottom: 6px; text-transform: uppercase;
+        }
+        input[type="number"], input[type="text"] {
+            width: 100%; padding: 14px 16px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input::placeholder { color: var(--muted); }
+        input:focus {
+            border-color: var(--border-active);
+            box-shadow: 0 0 0 3px rgba(99,179,255,0.08);
+        }
+
+        /* ── HOLD BUTTON ── */
+        .hold-wrap {
+            position: relative; border-radius: 14px; overflow: hidden;
+            margin-top: 16px; cursor: pointer;
+        }
+        .hold-fill {
+            position: absolute; top: 0; left: 0; height: 100%;
+            background: linear-gradient(90deg, var(--green), #22C55E);
+            width: 0%; transition: width 0.08s linear;
+            z-index: 1;
+        }
+        .hold-btn {
+            position: relative; z-index: 2;
+            width: 100%; padding: 16px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 0.95rem; font-weight: 600;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            user-select: none; -webkit-user-select: none;
+        }
+
+        /* ── SQUAD / INVITE ── */
+        .squad-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .squad-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 18px;
+        }
+        .squad-title { font-weight: 700; font-size: 1rem; }
+        .squad-count {
+            font-family: var(--mono); font-size: 0.85rem;
+            background: var(--primary-dim);
+            color: var(--primary);
+            padding: 4px 10px; border-radius: 8px;
+            font-weight: 700;
+        }
+        .invite-btn {
+            width: 100%; padding: 14px;
+            background: var(--primary-dim);
+            border: 1px solid var(--border-active);
+            border-radius: 12px;
+            color: var(--primary);
+            font-family: var(--font);
+            font-size: 0.95rem; font-weight: 600;
+            cursor: pointer; margin-bottom: 18px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .friend-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 0; border-bottom: 1px solid var(--border);
+        }
+        .friend-item:last-child { border-bottom: none; }
+        .friend-avatar {
+            width: 40px; height: 40px; border-radius: 12px;
+            background: var(--surface-2); display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; font-weight: 700; color: var(--primary); border: 1px solid var(--border); flex-shrink: 0;
+        }
+        .friend-name { font-weight: 600; font-size: 0.9rem; }
+        .friend-reward { font-family: var(--mono); font-size: 0.82rem; color: var(--green); margin-left: auto; font-weight: 700; }
+
+        /* ── CRASH GAME TAB (KHAFAN STYLE) ── */
+        .crash-history {
+            display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 16px;
+        }
+        .crash-history::-webkit-scrollbar { display: none; }
+        .crash-badge {
+            padding: 6px 12px; border-radius: 8px; font-family: var(--mono); font-size: 0.8rem; font-weight: 700;
+            background: var(--surface-2); border: 1px solid var(--border); flex-shrink: 0;
+        }
+        .crash-badge.good { color: var(--green); border-color: rgba(74,222,128,0.3); }
+        .crash-badge.bad { color: var(--red); border-color: rgba(248,113,113,0.3); }
+
+        .crash-board {
+            background: radial-gradient(circle at center, #1e293b 0%, #060810 100%);
+            border: 1px solid rgba(168,85,247,0.3);
+            border-radius: 20px;
+            height: 260px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+            box-shadow: 0 0 30px rgba(168,85,247,0.05);
+            margin-bottom: 20px;
+        }
+        .crash-curve-wrap {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 100%;
+            display: flex; align-items: flex-end; z-index: 1;
+        }
+        .crash-curve {
+            width: 100%; height: 0%;
+            background: linear-gradient(to top, rgba(168,85,247,0.2), transparent);
+            border-top: 2px solid #C084FC;
+            box-shadow: 0 -10px 20px rgba(168,85,247,0.2);
+            transition: height 0.1s linear;
+        }
+        .crash-multiplier {
+            font-size: 4.5rem; font-family: var(--mono); font-weight: 700; color: #fff;
+            z-index: 2; text-shadow: 0 0 20px rgba(255,255,255,0.3);
+            transition: color 0.2s;
+        }
+        .crash-status {
+            font-size: 0.9rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px;
+            z-index: 2; margin-top: 10px; font-weight: 600;
+        }
+
+        .crash-controls {
+            background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 20px;
+        }
+        .bet-row { display: flex; gap: 12px; margin-bottom: 16px; }
+        .bet-input-wrap { flex: 1; position: relative; }
+        .bet-input-wrap input { padding-right: 45px; }
+        .bet-currency {
+            position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+            font-size: 0.8rem; font-weight: 700; color: var(--primary);
+        }
+        .btn-bet {
+            width: 100%; padding: 16px; border: none; border-radius: 14px;
+            font-family: var(--font); font-size: 1rem; font-weight: 700; cursor: pointer;
+            transition: all 0.2s; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn-bet.place { background: var(--primary); color: #000; box-shadow: 0 4px 15px rgba(99,179,255,0.3); }
+        .btn-bet.cashout { background: var(--green); color: #000; box-shadow: 0 4px 15px rgba(74,222,128,0.3); }
+        .btn-bet.disabled { background: var(--surface-2); color: var(--muted); cursor: not-allowed; box-shadow: none; }
+
+        /* ── TASKS & OTHERS ── */
+        .task-item {
+            display: flex; align-items: center; justify-content: space-between;
+            background: var(--surface-2); border: 1px solid var(--border); border-radius: 14px;
+            padding: 16px; margin-bottom: 10px;
+        }
+        .task-icon { width: 42px; height: 42px; border-radius: 12px; background: var(--primary-dim); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: var(--primary); flex-shrink: 0; margin-right: 12px; }
+        .task-name { font-weight: 600; font-size: 0.9rem; }
+        .task-reward { font-size: 0.8rem; color: var(--green); font-weight: 600; margin-top: 2px; font-family: var(--mono); }
+        .task-actions { display: flex; gap: 8px; flex-shrink: 0; }
+        .btn-join { padding: 8px 14px; background: transparent; border: 1px solid var(--border-active); border-radius: 10px; color: var(--primary); font-family: var(--font); font-size: 0.82rem; font-weight: 600; text-decoration: none; }
+        .btn-verify { padding: 8px 14px; background: var(--green-dim); border: 1px solid rgba(74,222,128,0.2); border-radius: 10px; color: var(--green); font-family: var(--font); font-size: 0.82rem; font-weight: 600; cursor: pointer; }
+
+        .leader-item { display: flex; align-items: center; gap: 12px; padding: 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 8px; }
+        .rank-num { font-family: var(--mono); font-size: 0.82rem; font-weight: 700; color: var(--text-dim); width: 24px; text-align: center; flex-shrink: 0; }
+        .rank-1 .rank-num { color: var(--gold); font-size: 1rem; }
+        .rank-2 .rank-num { color: #E2E8F0; }
+        .rank-3 .rank-num { color: #CD7F32; }
+        .leader-avatar { width: 38px; height: 38px; border-radius: 10px; background: var(--surface); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; color: var(--primary); border: 1px solid var(--border); flex-shrink: 0; }
+        .leader-name { font-weight: 600; font-size: 0.88rem; }
+        .leader-reward { font-family: var(--mono); font-size: 0.88rem; font-weight: 700; color: var(--green); margin-left: auto; }
+
+        .section-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 16px; }
+        .section-card-title { font-weight: 700; font-size: 1rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+        /* ── BOTTOM NAV ── */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+            display: flex; background: rgba(6,8,16,0.92); backdrop-filter: blur(20px); border-top: 1px solid var(--border); padding: 0;
+        }
+        .nav-tab {
+            flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 4px; padding: 12px 0 16px; color: var(--text-dim); cursor: pointer; position: relative;
+            transition: color 0.2s; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.3px;
+        }
+        .nav-tab svg { width: 22px; height: 22px; stroke-width: 1.8; }
+        .nav-tab.active { color: var(--primary); }
+        .nav-tab.active::before { content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 2px; background: var(--primary); border-radius: 0 0 2px 2px; }
+
+        .empty-state { text-align: center; padding: 32px 20px; color: var(--text-dim); font-size: 0.9rem; }
+        .fade-up { animation: fadeUp 0.4s cubic-bezier(0.25,0.46,0.45,0.94) forwards; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        .hidden { display: none !important; }
     </style>
 </head>
-<body class="text-gray-100 min-h-screen flex flex-col pb-24 select-none">
+<body>
 
-    <div id="gatekeeper-overlay" class="fixed inset-0 bg-[#050b07] z-50 flex-col items-center justify-center p-6 hidden">
-        <div class="text-center max-w-sm">
-            <div class="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-500/30">
-                <i class="fa-solid fa-shield-halved text-4xl text-green-400 animate-pulse"></i>
-            </div>
-            <h2 class="text-2xl font-bold text-white mb-2">Access Verification</h2>
-            <p class="text-gray-400 text-sm mb-6">To unlock GramGift rewards and the Pepe Crash game, you must join our official networks first.</p>
-            
-            <div id="gatekeeper-channels-list" class="space-y-3 mb-6 text-left">
-                </div>
-            
-            <button onclick="checkMandatoryGate()" class="w-full btn-pepe py-3.5 rounded-xl font-bold text-white transition-all">
-                <i class="fa-solid fa-rotate-right mr-2"></i> Verify Memberships
-            </button>
+<!-- TOP BAR -->
+<div class="topbar">
+    <div class="logo">
+        <div class="logo-icon">💎</div>
+        <div class="logo-text">Gram<span>Gift</span></div>
+    </div>
+    <div class="live-pill">
+        <div class="live-dot"></div>
+        <span id="online-count">1,024</span> Online
+    </div>
+</div>
+
+<!-- MAIN TAB -->
+<div class="page fade-up" id="tab-main">
+
+    <!-- Pool Hero -->
+    <div class="pool-hero">
+        <div class="pool-label">Total Reward Pool</div>
+        <div class="pool-number"><span id="pool-amount">15,400</span> <span style="color:var(--primary)">TON</span></div>
+        <br>
+        <div class="pool-usd" id="usd-value">≈ $107,800 USD</div>
+    </div>
+
+    <!-- Live Activity Box (Dynamic) -->
+    <div class="live-activity-box">
+        <div class="live-activity-icon"></div>
+        <div class="live-activity-text">
+            <strong id="live-withdraw-count">142</strong> users are actively withdrawing right now!
         </div>
     </div>
 
-    <header class="p-4 flex items-center justify-between border-b border-green-950/40 bg-[#07140d]/80 backdrop-blur-md sticky top-0 z-40">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-green-500/10 border border-green-500/30 flex items-center justify-center font-black text-green-400 text-xl tracking-tight">
-                🐸
-            </div>
+    <!-- Balance + Withdraw -->
+    <div class="balance-card">
+        <div class="balance-row">
             <div>
-                <h1 class="font-bold text-sm tracking-wide text-white" id="user-display-name">GramGift User</h1>
-                <p class="text-xs text-green-400/80 flex items-center gap-1">
-                    <span class="inline-block w-1.5 h-1.5 rounded-full bg-green-400 animate-ping"></span>
-                    <span id="live-online-counter">1</span> online
-                </p>
+                <div class="balance-label">Your Balance</div>
+                <div class="balance-value"><span id="user-balance">0.00</span> <em>TON</em></div>
             </div>
         </div>
-        <div class="text-right">
-            <div class="text-xs text-gray-400">TON Price</div>
-            <div class="text-sm font-bold text-green-400" id="live-ton-price">$5.25</div>
+
+        <!-- Locked state -->
+        <div id="withdraw-locked" class="locked-state">
+            <div class="locked-icon">🔒</div>
+            <div class="locked-text" style="flex:1">
+                Collect referrals below to earn TON and unlock your Wallet! (Invite <strong>5 friends</strong>)<br>
+                <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" id="lock-progress" style="width:0%"></div>
+                </div>
+            </div>
         </div>
-    </header>
 
-    <main class="flex-1 p-4 max-w-md mx-auto w-full space-y-4">
-
-        <section id="tab-home" class="tab-content space-y-4">
-            <div class="crypto-card rounded-2xl p-5 relative overflow-hidden">
-                <div class="absolute top-0 right-0 p-3 opacity-10 pointer-events-none">
-                    <i class="fa-solid fa-coins text-7xl text-green-400"></i>
-                </div>
-                <div class="flex justify-between items-center mb-4">
-                    <span class="text-xs font-semibold tracking-wider text-gray-400 uppercase">Global Reward Pool</span>
-                    <span class="text-xs bg-green-500/10 text-green-400 px-2.5 py-1 rounded-full border border-green-500/20 font-mono" id="pool-amount">0.00 TON</span>
-                </div>
-                <div class="text-gray-400 text-xs mb-1">Your Available Balance</div>
-                <div class="flex items-baseline gap-2">
-                    <span class="text-4xl font-black text-white tracking-tight font-mono" id="user-balance">0.00</span>
-                    <span class="text-lg font-bold text-green-400 font-mono">TON</span>
-                </div>
+        <!-- Unlocked state -->
+        <div id="withdraw-unlocked" class="hidden unlocked-actions">
+            <div style="font-size:0.85rem; color:var(--green); font-weight:600; margin-bottom: 8px;">
+                ✅ Wallet Unlocked! Withdraw or Multiply in Crash.
             </div>
 
-            <div class="crypto-card rounded-2xl p-4">
-                <h3 class="text-sm font-bold text-gray-300 mb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-bolt text-green-400"></i> Active Bounty Quests
-                </h3>
-                <div id="tasks-container" class="space-y-2.5">
-                    </div>
-            </div>
-
-            <div class="crypto-card rounded-2xl p-4">
-                <h3 class="text-sm font-bold text-gray-300 mb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-receipt text-green-400"></i> Verified Payout Logs
-                </h3>
-                <div id="payouts-log-container" class="space-y-2 max-h-40 overflow-y-auto pr-1">
-                    </div>
-            </div>
-        </section>
-
-        <section id="tab-crash" class="tab-content space-y-4 hidden">
-            <div class="crypto-card rounded-2xl p-4 relative flex flex-col justify-between overflow-hidden min-h-[220px] bg-gradient-to-b from-[#0b1e13] to-[#040906]">
-                <div class="absolute inset-0 opacity-5 pointer-events-none bg-[radial-gradient(#22c55e_1px,transparent_1px)] [background-size:16px_16px]"></div>
-                
-                <div class="flex justify-between items-center z-10">
-                    <span class="text-xs bg-black/40 text-gray-400 px-2.5 py-1 rounded-full border border-green-950/40 uppercase tracking-widest font-bold" id="crash-status-badge">Waiting</span>
-                    <span class="text-xs font-mono text-green-400/80" id="crash-timer-display"></span>
+            <div style="background:var(--surface-2); padding:16px; border-radius:14px; border:1px solid var(--border);">
+                <div class="input-group">
+                    <label class="input-label">Amount (min 1.0 TON)</label>
+                    <input type="number" id="withdraw-amount" placeholder="0.00" step="0.1" min="1.0">
                 </div>
-
-                <div class="text-center my-auto py-4 z-10 transition-all duration-75">
-                    <div class="text-5xl font-black tracking-tight font-mono text-white" id="crash-multiplier">1.00x</div>
-                    <div class="text-xs text-gray-400 mt-1" id="crash-sub-text">Pepe preparing for take-off...</div>
+                <div class="input-group">
+                    <label class="input-label">TON Wallet Address</label>
+                    <input type="text" id="withdraw-address" placeholder="EQ…">
                 </div>
-
-                <div class="w-full bg-black/40 rounded-full h-1 overflow-hidden border border-green-950/20">
-                    <div id="crash-progress-bar" class="bg-green-500 h-full w-0 transition-all duration-100"></div>
-                </div>
-            </div>
-
-            <div class="crypto-card rounded-2xl p-4 space-y-3">
-                <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="text-[10px] uppercase font-bold text-gray-400 block mb-1">Bet Amount (TON)</label>
-                        <input id="crash-amount-input" type="number" step="0.1" min="0.1" value="0.5" class="w-full bg-black/40 border border-green-950/60 rounded-xl px-3 py-2.5 text-white font-mono font-bold focus:outline-none focus:border-green-500 transition-colors">
-                    </div>
-                    <div class="flex flex-col justify-end">
-                        <div class="grid grid-cols-2 gap-1">
-                            <button onclick="adjustBet(0.1)" class="bg-green-950/30 border border-green-950/60 hover:bg-green-900/40 rounded-xl text-xs py-1.5 font-bold font-mono">+0.1</button>
-                            <button onclick="adjustBet(0.5)" class="bg-green-950/30 border border-green-950/60 hover:bg-green-900/40 rounded-xl text-xs py-1.5 font-bold font-mono">+0.5</button>
-                        </div>
-                    </div>
-                </div>
-
-                <button id="crash-action-btn" onclick="handleCrashAction()" class="w-full btn-pepe py-3.5 rounded-xl font-bold text-white text-base tracking-wide uppercase transition-all duration-100">
-                    Place Bet
-                </button>
-            </div>
-        </section>
-
-        <section id="tab-referral" class="tab-content space-y-4 hidden">
-            <div class="crypto-card rounded-2xl p-5 text-center space-y-3">
-                <div class="w-14 h-14 bg-green-500/10 border border-green-500/20 rounded-2xl flex items-center justify-center mx-auto text-2xl">
-                    👑
-                </div>
-                <div>
-                    <h3 class="text-lg font-black text-white">Invite Friends, Earn TON</h3>
-                    <p class="text-xs text-gray-400 mt-1">Get <span class="text-green-400 font-bold font-mono">0.2 TON</span> instantly for every active friend you bring into GramGift.</p>
-                </div>
-                
-                <div class="pt-2">
-                    <button onclick="copyInviteLink()" class="w-full bg-green-950/40 border border-green-500/30 hover:bg-green-900/30 text-green-400 font-bold py-3 px-4 rounded-xl text-sm transition-all flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-copy"></i> Copy Unique Invite Link
+                <div class="hold-wrap" id="hold-btn">
+                    <div class="hold-fill" id="hold-progress"></div>
+                    <button class="hold-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        Hold to Withdraw
                     </button>
                 </div>
             </div>
 
-            <div class="crypto-card rounded-2xl p-4">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-trophy text-yellow-500"></i> Network Leaderboard Elite
-                </h3>
-                <div id="leaderboard-container" class="space-y-2 max-h-60 overflow-y-auto pr-1">
-                    </div>
+            <div class="crash-transfer-btn" onclick="switchTab('crash')">
+                <span>🚀</span> Play Crash & Multiply Balance
             </div>
-        </section>
+        </div>
+    </div>
 
-        <section id="tab-wallet" class="tab-content space-y-4 hidden">
-            <div class="crypto-card rounded-2xl p-5 space-y-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center justify-center text-xl text-green-400">
-                        <i class="fa-solid fa-wallet"></i>
-                    </div>
-                    <div>
-                        <div class="text-xs text-gray-400">Withdrawable Balance</div>
-                        <div class="text-2xl font-black text-white font-mono"><span id="wallet-balance-display">0.00</span> <span class="text-sm font-bold text-green-400">TON</span></div>
-                    </div>
+    <!-- Squad / Invite -->
+    <div class="squad-card">
+        <div class="squad-header">
+            <div class="squad-title">Earn TON via Referrals</div>
+            <div class="squad-count" id="invite-count">0 friends</div>
+        </div>
+        <p style="font-size:0.83rem; color:var(--text-dim); margin-top:0; margin-bottom:16px;">
+            Invite friends to earn direct TON rewards and unlock your wallet features.
+        </p>
+        <button class="invite-btn" onclick="copyInviteLink()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+            Copy Invite Link
+        </button>
+        <div id="invite-list">
+            <div class="empty-state" style="padding:16px;">
+                <div style="font-size:1.5rem;margin-bottom:6px;">👥</div>
+                No friends invited yet
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CRASH TAB (NEW) -->
+<div class="page hidden" id="tab-crash">
+    <div class="section-card fade-up" style="padding: 16px; margin-bottom: 16px;">
+        <div class="crash-history" id="crash-history">
+            <div class="crash-badge bad">1.12x</div>
+            <div class="crash-badge good">2.45x</div>
+            <div class="crash-badge good">5.10x</div>
+            <div class="crash-badge bad">1.05x</div>
+            <div class="crash-badge good">3.20x</div>
+        </div>
+
+        <div class="crash-board">
+            <div class="crash-curve-wrap">
+                <div class="crash-curve" id="crash-curve"></div>
+            </div>
+            <div class="crash-multiplier" id="crash-multiplier">1.00x</div>
+            <div class="crash-status" id="crash-status">Waiting for next round...</div>
+        </div>
+
+        <div class="crash-controls">
+            <div class="balance-row" style="margin-bottom:12px; padding-bottom:12px;">
+                <div class="balance-label">Crash Balance</div>
+                <div class="balance-value" style="font-size:1.2rem;"><span id="crash-user-balance">0.00</span> <em>TON</em></div>
+            </div>
+            <div class="bet-row">
+                <div class="bet-input-wrap">
+                    <input type="number" id="crash-bet-amount" placeholder="Bet Amount" value="1.0" min="0.1" step="0.1">
+                    <span class="bet-currency">TON</span>
                 </div>
-
-                <hr class="border-green-950/40">
-
-                <div class="space-y-3">
-                    <div>
-                        <label class="text-[10px] uppercase font-bold text-gray-400 block mb-1">Target Non-Custodial TON Address</label>
-                        <input id="withdraw-address" type="text" placeholder="UQ... or EQ..." class="w-full bg-black/40 border border-green-950/60 rounded-xl px-3 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-green-500 transition-colors">
-                    </div>
-                    <div>
-                        <label class="text-[10px] uppercase font-bold text-gray-400 block mb-1">Payout Quantum Amount (Min 1.0 TON)</label>
-                        <input id="withdraw-amount" type="number" step="0.1" placeholder="0.0" class="w-full bg-black/40 border border-green-950/60 rounded-xl px-3 py-2.5 text-xs text-white font-mono focus:outline-none focus:border-green-500 transition-colors">
-                    </div>
-                    <button onclick="executeWithdrawalRequest()" class="w-full btn-pepe py-3 rounded-xl font-bold text-white text-sm tracking-wide uppercase transition-all mt-2">
-                        Submit Withdrawal Order
-                    </button>
-                </div>
             </div>
+            <button class="btn-bet place" id="btn-crash-action" onclick="handleCrashAction()">Place Bet</button>
+        </div>
+    </div>
+</div>
 
-            <div class="crypto-card rounded-2xl p-4">
-                <h3 class="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Your Transfer History</h3>
-                <div id="personal-withdrawals-container" class="space-y-2 text-xs text-gray-400">
-                    </div>
-            </div>
-        </section>
+<!-- TASKS TAB -->
+<div class="page hidden" id="tab-tasks">
+    <div class="section-card fade-up">
+        <div class="section-card-title">
+            <span class="title-icon">🎯</span> Earn Extra TON
+        </div>
+        <p style="font-size:0.83rem; color:var(--text-dim); margin:0 0 18px 0; line-height:1.6;">
+            Join channels below and verify membership to earn TON directly to your balance.
+        </p>
+        <div id="tasks-container">
+            <div class="empty-state">Loading tasks…</div>
+        </div>
+    </div>
+</div>
 
-    </main>
+<!-- LEADERBOARD TAB -->
+<div class="page hidden" id="tab-leaderboard">
+    <div class="section-card fade-up">
+        <div class="section-card-title"><span>🏆</span> Top Inviters</div>
+        <div id="top-inviters"><div class="empty-state">Loading…</div></div>
+    </div>
+</div>
 
-    <nav class="fixed bottom-0 left-0 right-0 bg-[#050b07]/95 border-t border-green-950/60 backdrop-blur-lg z-40 flex justify-around max-w-md mx-auto">
-        <button onclick="switchTab('home')" id="nav-home" class="tab-btn flex-1 py-3 text-center text-gray-500 flex flex-col items-center gap-1 transition-all active:scale-95">
-            <i class="fa-solid fa-house-chimney text-lg"></i><span class="text-[10px] font-medium">Earn</span>
-        </button>
-        <button onclick="switchTab('crash')" id="nav-crash" class="tab-btn flex-1 py-3 text-center text-gray-500 flex flex-col items-center gap-1 transition-all active:scale-95">
-            <i class="fa-solid fa-chart-line text-lg"></i><span class="text-[10px] font-medium">Crash</span>
-        </button>
-        <button onclick="switchTab('referral')" id="nav-referral" class="tab-btn flex-1 py-3 text-center text-gray-500 flex flex-col items-center gap-1 transition-all active:scale-95">
-            <i class="fa-solid fa-users text-lg"></i><span class="text-[10px] font-medium">Friends</span>
-        </button>
-        <button onclick="switchTab('wallet')" id="nav-wallet" class="tab-btn flex-1 py-3 text-center text-gray-500 flex flex-col items-center gap-1 transition-all active:scale-95">
-            <i class="fa-solid fa-wallet text-lg"></i><span class="text-[10px] font-medium">Wallet</span>
-        </button>
-    </nav>
+<!-- BOTTOM NAV (UPDATED WITH CRASH) -->
+<div class="bottom-nav">
+    <div class="nav-tab active" id="nav-main" onclick="switchTab('main')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Wallet
+    </div>
+    <div class="nav-tab" id="nav-crash" onclick="switchTab('crash')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg>
+        Crash 🚀
+    </div>
+    <div class="nav-tab" id="nav-tasks" onclick="switchTab('tasks')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        Earn
+    </div>
+    <div class="nav-tab" id="nav-leaderboard" onclick="switchTab('leaderboard')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+        Leaders
+    </div>
+</div>
 
-    <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        tg.ready();
+<script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+    tg.setHeaderColor('#060810');
+    tg.setBackgroundColor('#060810');
 
-        // Safe Fallbacks Initialization Data Context Profiles
-        const initDataRaw = tg.initDataUnsafe || {};
-        const USER_ID = initDataRaw.user ? String(initDataRaw.user.id) : "123456789"; 
-        const FIRST_NAME = initDataRaw.user ? initDataRaw.user.first_name : "GramGift Explorer";
+    const userId = tg.initDataUnsafe?.user?.id?.toString() || '0';
+    let inviteCount = 0;
+    let userBalance = 0.00;
 
-        document.getElementById('user-display-name').innerText = FIRST_NAME;
+    /* ── TAB SWITCHING ── */
+    function switchTab(name) {
+        ['main','crash','tasks','leaderboard'].forEach(t => {
+            document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== name);
+            document.getElementById(`nav-${t}`).classList.toggle('active', t === name);
+        });
+        if(name === 'crash') updateCrashBalanceUI();
+        tg.HapticFeedback.selectionChanged();
+    }
 
-        let globalState = { balance: 0.0, currentCrashState: null, hasJoinedGate: false };
+    /* ── DYNAMIC LIVE PAYOUTS COUNTER ── */
+    let liveWithdrawCount = 142;
+    setInterval(() => {
+        // Randomly change the number of active withdrawers slightly
+        const change = Math.floor(Math.random() * 5) - 2; // -2 to +2
+        liveWithdrawCount = Math.max(80, liveWithdrawCount + change);
+        document.getElementById('live-withdraw-count').textContent = liveWithdrawCount;
+    }, 3500);
 
-        // Core App Routing System
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            
-            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
-            document.getElementById(`nav-${tabId}`).classList.add('active');
-        }
+    /* ── CRASH GAME LOGIC ── */
+    let crashState = 'waiting'; // waiting, running, crashed
+    let currentMultiplier = 1.00;
+    let crashPoint = 0;
+    let currentBet = 0;
+    let betPlaced = false;
+    let crashInterval;
 
-        // Live Environment Synchronization Polling Loop
-        async function fetchSystemData() {
-            try {
-                let res = await fetch(`/api/data?user_id=${USER_ID}`);
-                let data = await res.json();
-                document.getElementById('pool-amount').innerText = `${data.total_pool.toFixed(2)} TON`;
-                document.getElementById('live-ton-price').innerText = `$${data.ton_price.toFixed(2)}`;
-                document.getElementById('live-online-counter').innerText = data.online_count;
+    function updateCrashBalanceUI() {
+        document.getElementById('crash-user-balance').textContent = userBalance.toFixed(2);
+    }
 
-                // Render logs dynamic rows context safely
-                let container = document.getElementById('payouts-log-container');
-                container.innerHTML = data.recent_payouts.map(p => `
-                    <div class="flex justify-between items-center bg-black/20 p-2 rounded-lg border border-green-950/20 text-xs">
-                        <span class="text-gray-300 font-medium flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-green-500"></i> ${p.name}</span>
-                        <span class="font-mono font-bold text-green-400">+${p.amount.toFixed(1)} TON</span>
-                    </div>
-                `).join('') || `<div class="text-center py-4 text-xs text-gray-500">Awaiting block settlements...</div>`;
-            } catch(e) {}
-        }
-
-        async function refreshUserContext() {
-            try {
-                let res = await fetch(`/api/user/${USER_ID}`);
-                let data = await res.json();
-                
-                globalState.balance = data.balance;
-                document.getElementById('user-balance').innerText = data.balance.toFixed(2);
-                document.getElementById('wallet-balance-display').innerText = data.balance.toFixed(2);
-                
-                // Update Personal withdrawals rows logs state UI list maps
-                let pContainer = document.getElementById('personal-withdrawals-container');
-                pContainer.innerHTML = data.withdrawals.map(w => `
-                    <div class="flex justify-between items-center bg-black/20 p-2.5 rounded-lg border border-green-950/40">
-                        <div>
-                            <div class="font-mono text-white text-xs">${w.amount} TON</div>
-                            <div class="text-[10px] text-gray-500">${w.date}</div>
-                        </div>
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${w.status==='Approved'?'bg-green-500/10 text-green-400':(w.status==='Pending'?'bg-yellow-500/10 text-yellow-400':'bg-red-500/10 text-red-400')}">${w.status}</span>
-                    </div>
-                `).join('') || `<div class="text-center py-2 text-gray-500">No transactions initiated yet.</div>`;
-            } catch(e) {}
-        }
-
-        // Gatekeeper Functional Sequence Logic Processing
-        async function checkMandatoryGate() {
-            try {
-                let res = await fetch(`/api/mandatory_check/${USER_ID}`);
-                let data = await res.json();
-                let overlay = document.getElementById('gatekeeper-overlay');
-                let listContainer = document.getElementById('gatekeeper-channels-list');
-                
-                if (data.unjoined && data.unjoined.length > 0) {
-                    overlay.classList.remove('hidden');
-                    overlay.classList.add('flex');
-                    listContainer.innerHTML = data.unjoined.map(ch => `
-                        <a href="https://t.me/${ch.replace('@','')}" target="_blank" class="flex items-center justify-between bg-green-950/20 border border-green-950/60 hover:bg-green-900/10 p-3 rounded-xl transition-all">
-                            <span class="text-sm font-semibold text-gray-200">${ch}</span>
-                            <span class="text-xs bg-green-500 text-black px-2.5 py-1 rounded-md font-bold">Join Channel <i class="fa-solid fa-arrow-up-right-from-square ml-1 text-[10px]"></i></span>
-                        </a>
-                    `).join('');
-                } else {
-                    overlay.classList.add('hidden');
-                    overlay.classList.remove('flex');
-                    if (!globalState.hasJoinedGate) {
-                        globalState.hasJoinedGate = true;
-                        refreshUserContext();
-                        fetchActiveTasks();
-                    }
-                }
-            } catch(e) {}
-        }
-
-        // Active Tasks Management Panel Module Renderers
-        async function fetchActiveTasks() {
-            try {
-                let res = await fetch(`/api/tasks/${USER_ID}`);
-                let data = await res.json();
-                let container = document.getElementById('tasks-container');
-                container.innerHTML = data.tasks.map(t => `
-                    <div class="flex items-center justify-between bg-black/20 border border-green-950/40 p-3 rounded-xl">
-                        <div>
-                            <div class="text-xs font-bold text-gray-200">Subscribe to ${t.channel}</div>
-                            <div class="text-[11px] font-mono font-bold text-green-400 mt-0.5">+${t.reward} TON</div>
-                        </div>
-                        <button onclick="verifyTaskCompletion('${t.channel}')" class="bg-green-500/10 border border-green-500/30 text-green-400 hover:bg-green-500 hover:text-black font-bold text-xs px-3 py-1.5 rounded-lg transition-all">Check</button>
-                    </div>
-                `).join('') || `<div class="text-center py-4 text-xs text-gray-500 flex flex-col items-center gap-2"><i class="fa-solid fa-circle-check text-green-500 text-lg"></i> You have cleared all bounties!</div>`;
-            } catch(e) {}
-        }
-
-        async function verifyTaskCompletion(channel) {
-            try {
-                let res = await fetch('/api/check_task', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ user_id: USER_ID, channel: channel })
-                });
-                let data = await res.json();
-                if (data.status === 'success') {
-                    alert(`Bounty Secured! Added +${data.reward} TON.`);
-                    refreshUserContext();
-                    fetchActiveTasks();
-                } else {
-                    alert(data.message || "Subscription token check unverified.");
-                }
-            } catch(e) { alert("Verification tracking connection error."); }
-        }
-
-        // Referral Links Generation Operations
-        function copyInviteLink() {
-            let link = `https://t.me/GiftGram_Bot/app?startapp=${USER_ID}`;
-            navigator.clipboard.writeText(link).then(() => {
-                alert("Unique referral link cloned to clipboard!");
-            }).catch(() => {
-                alert(`Fallback Link text: ${link}`);
-            });
-        }
-
-        async function fetchLeaderboard() {
-            try {
-                let res = await fetch('/api/leaderboard');
-                let data = await res.json();
-                let container = document.getElementById('leaderboard-container');
-                container.innerHTML = data.leaders.map((l, index) => `
-                    <div class="flex justify-between items-center bg-black/20 p-2.5 rounded-xl border border-green-950/30 text-xs">
-                        <div class="flex items-center gap-2">
-                            <span class="w-5 font-bold ${index<3?'text-green-400':'text-gray-600'}">#${index+1}</span>
-                            <span class="text-gray-200 font-medium">${l.name}</span>
-                        </div>
-                        <div class="text-right font-mono">
-                            <div class="text-white font-bold">${l.invites} ref</div>
-                            <div class="text-[10px] text-green-400">+${l.reward.toFixed(1)} TON</div>
-                        </div>
-                    </div>
-                `).join('') || `<div class="text-center py-4 text-xs text-gray-500">Awaiting tier list calculations...</div>`;
-            } catch(e) {}
-        }
-
-        // Wallet Dispatch Requests Operations
-        async function executeWithdrawalRequest() {
-            let addr = document.getElementById('withdraw-address').value.trim();
-            let amt = parseFloat(document.getElementById('withdraw-amount').value);
-            if (!addr || isNaN(amt) || amt < 1.0) {
-                alert("Provide validation context: Min threshold 1.0 TON.");
-                return;
-            }
-            if (amt > globalState.balance) {
-                alert("Bounty quantum request scale exceeding current active user profile.");
-                return;
-            }
-            try {
-                let res = await fetch('/api/withdraw', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ user_id: USER_ID, amount: amt, address: addr })
-                });
-                let data = await res.json();
-                if (data.status === 'success') {
-                    alert("Withdrawal order routed to node administrators queue successfully.");
-                    document.getElementById('withdraw-address').value = '';
-                    document.getElementById('withdraw-amount').value = '';
-                    refreshUserContext();
-                } else { alert(data.message); }
-            } catch(e) { alert("Operational pipeline timeout error."); }
-        }
-
-        // --- Core 24/7 Pepe Crash Engine Realtime UI Engine Subsystem ---
-        let localCrashContext = { currentStatus: "", placedBetThisRound: false };
-
-        function adjustBet(val) {
-            let input = document.getElementById('crash-amount-input');
-            let current = parseFloat(input.value) || 0;
-            input.value = Math.max(0.1, roundToTwo(current + val));
-        }
-        function roundToTwo(num) { return +(Math.round(num + "e+2")  + "e-2"); }
-
-        async function loopCrashState() {
-            try {
-                let res = await fetch(`/api/crash/state?user_id=${USER_ID}`);
-                let state = await res.json();
-                
-                let mDisplay = document.getElementById('crash-multiplier');
-                let badge = document.getElementById('crash-status-badge');
-                let subText = document.getElementById('crash-sub-text');
-                let bar = document.getElementById('crash-progress-bar');
-                let actionBtn = document.getElementById('crash-action-btn');
-
-                localCrashContext.currentStatus = state.status;
-                mDisplay.innerText = `${state.multiplier.toFixed(2)}x`;
-
-                if (state.status === "waiting") {
-                    badge.innerText = "Accepting Bets";
-                    badge.className = "text-xs bg-yellow-500/10 text-yellow-400 px-2.5 py-1 rounded-full border border-yellow-500/20 uppercase tracking-widest font-bold";
-                    document.getElementById('crash-timer-display').innerText = `Starts in: ${state.time_left.toFixed(1)}s`;
-                    subText.innerText = "Secure your strategic allocation profile node...";
-                    bar.style.width = `${(state.time_left / 5.0) * 100}%`;
-                    bar.className = "bg-yellow-500 h-full transition-all duration-100";
-
-                    if (state.user_bet) {
-                        actionBtn.innerText = `Allocated: ${state.user_bet.amount} TON`;
-                        actionBtn.disabled = true;
-                        actionBtn.className = "w-full bg-green-950/40 border border-green-800/40 py-3.5 rounded-xl font-bold text-green-500/80 uppercase cursor-not-allowed text-center";
-                    } else {
-                        actionBtn.innerText = "Place Bet";
-                        actionBtn.disabled = false;
-                        actionBtn.className = "w-full btn-pepe py-3.5 rounded-xl font-bold text-white text-base tracking-wide uppercase transition-all duration-100";
-                    }
-
-                } else if (state.status === "flying") {
-                    badge.innerText = "Pepe Airborne";
-                    badge.className = "text-xs bg-green-500/10 text-green-400 px-2.5 py-1 rounded-full border border-green-500/20 uppercase tracking-widest font-bold";
-                    document.getElementById('crash-timer-display').innerText = "🚀 Rocket Active";
-                    bar.style.width = "100%";
-                    bar.className = "bg-green-500 h-full";
-
-                    if (state.user_bet && !state.user_bet.cashed_out) {
-                        let dynamicEst = (state.user_bet.amount * state.multiplier).toFixed(2);
-                        actionBtn.innerText = `Cash Out: +${dynamicEst} TON`;
-                        actionBtn.disabled = false;
-                        actionBtn.className = "w-full bg-gradient-to-r from-yellow-500 to-amber-600 shadow-lg shadow-yellow-500/20 py-3.5 rounded-xl font-black text-black text-base tracking-wide uppercase transition-all duration-75 scale-[1.02]";
-                    } else if (state.user_bet && state.user_bet.cashed_out) {
-                        actionBtn.innerText = `Secured +${state.user_bet.profit.toFixed(2)} TON`;
-                        actionBtn.disabled = true;
-                        actionBtn.className = "w-full bg-green-950/30 border border-green-900/20 py-3.5 rounded-xl font-bold text-green-400/80 uppercase cursor-not-allowed text-center";
-                    } else {
-                        actionBtn.innerText = "In Progress (Locked)";
-                        actionBtn.disabled = true;
-                        actionBtn.className = "w-full bg-black/40 border border-green-950/40 py-3.5 rounded-xl font-bold text-gray-600 uppercase cursor-not-allowed text-center";
-                    }
-                    subText.innerText = "Eject before connection sequence termination!";
-
-                } else if (state.status === "crashed") {
-                    badge.innerText = "Crashed";
-                    badge.className = "text-xs bg-red-500/10 text-red-400 px-2.5 py-1 rounded-full border border-red-500/20 uppercase tracking-widest font-bold";
-                    document.getElementById('crash-timer-display').innerText = "💥 BOOM";
-                    mDisplay.className = "text-5xl font-black tracking-tight font-mono text-red-500 scale-95 transition-all duration-100";
-                    subText.innerText = "Pepe hit the ground hard. Loading next generation...";
-                    bar.style.width = "0%";
-                    
-                    actionBtn.innerText = "Generating next Epoch...";
-                    actionBtn.disabled = true;
-                    actionBtn.className = "w-full bg-black/40 border border-red-950/20 py-3.5 rounded-xl font-bold text-red-950 uppercase cursor-not-allowed text-center";
-                }
-
-                if(state.status !== "crashed") {
-                    mDisplay.className = "text-5xl font-black tracking-tight font-mono text-white";
-                }
-
-            } catch(e) {}
-        }
-
-        async function handleCrashAction() {
-            if (localCrashContext.currentStatus === "waiting") {
-                let amt = parseFloat(document.getElementById('crash-amount-input').value);
-                if(isNaN(amt) || amt <= 0 || amt > globalState.balance) {
-                    alert("Invalid wager value or lack of resource tokens.");
+    function handleCrashAction() {
+        const btn = document.getElementById('btn-crash-action');
+        
+        if (crashState === 'waiting') {
+            if (!betPlaced) {
+                const betInput = parseFloat(document.getElementById('crash-bet-amount').value);
+                if (isNaN(betInput) || betInput <= 0 || betInput > userBalance) {
+                    tg.showAlert('Invalid bet amount or insufficient balance!');
                     return;
                 }
-                try {
-                    let res = await fetch('/api/crash/bet', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ user_id: USER_ID, amount: amt })
-                    });
-                    let data = await res.json();
-                    if(data.status==='success') { refreshUserContext(); }
-                    else { alert(data.message); }
-                } catch(e){}
-            } else if (localCrashContext.currentStatus === "flying") {
-                try {
-                    let res = await fetch('/api/crash/cashout', {
-                        method: 'POST',
-                        headers: {'Content-Type': 'application/json'},
-                        body: JSON.stringify({ user_id: USER_ID })
-                    });
-                    let data = await res.json();
-                    if(data.status==='success') {
-                        alert(`Successfully cashed out! Won: +${data.profit} TON.`);
-                        refreshUserContext();
-                    } else { alert(data.message); }
-                } catch(e){}
+                userBalance -= betInput;
+                currentBet = betInput;
+                betPlaced = true;
+                
+                document.getElementById('user-balance').textContent = userBalance.toFixed(2);
+                updateCrashBalanceUI();
+                
+                btn.className = 'btn-bet disabled';
+                btn.textContent = 'Waiting for round...';
+                tg.HapticFeedback.impactOccurred('light');
+            }
+        } else if (crashState === 'running') {
+            if (betPlaced) {
+                // Cashout
+                const winAmount = currentBet * currentMultiplier;
+                userBalance += winAmount;
+                betPlaced = false;
+                
+                document.getElementById('user-balance').textContent = userBalance.toFixed(2);
+                updateCrashBalanceUI();
+                
+                btn.className = 'btn-bet disabled';
+                btn.textContent = `Cashed out: ${winAmount.toFixed(2)} TON`;
+                tg.HapticFeedback.notificationOccurred('success');
             }
         }
+    }
 
-        // Application Lifecycles Loops Deployments Setup 
-        switchTab('home');
-        checkMandatoryGate();
+    function startCrashRound() {
+        crashState = 'running';
+        currentMultiplier = 1.00;
+        // Random crash point (e.g., heavily weighted towards lower numbers)
+        crashPoint = 1.00 + Math.pow(Math.random(), 3) * 10; 
+        
+        document.getElementById('crash-multiplier').style.color = '#fff';
+        document.getElementById('crash-status').textContent = 'Graph is flying!';
+        
+        const btn = document.getElementById('btn-crash-action');
+        if (betPlaced) {
+            btn.className = 'btn-bet cashout';
+            btn.textContent = 'Cash Out';
+        } else {
+            btn.className = 'btn-bet disabled';
+            btn.textContent = 'Wait for next round';
+        }
 
-        setInterval(fetchSystemData, 3000);
-        setInterval(refreshUserContext, 4000);
-        setInterval(checkMandatoryGate, 10000);
-        setInterval(loopCrashState, 150);
+        clearInterval(crashInterval);
+        crashInterval = setInterval(() => {
+            currentMultiplier += 0.01 + (currentMultiplier * 0.005);
+            
+            if (currentMultiplier >= crashPoint) {
+                endCrashRound();
+            } else {
+                document.getElementById('crash-multiplier').textContent = currentMultiplier.toFixed(2) + 'x';
+                // Update graph height visually
+                const h = Math.min(100, ((currentMultiplier - 1) / 3) * 100);
+                document.getElementById('crash-curve').style.height = `${h}%`;
+                
+                if(betPlaced && btn.className.includes('cashout')) {
+                    btn.textContent = `Cash Out ${(currentBet * currentMultiplier).toFixed(2)}`;
+                }
+            }
+        }, 50);
+    }
 
-        // Heavy layout updates bound sequentially to active sub tabs
-        setInterval(() => {
-            fetchActiveTasks();
-            fetchLeaderboard();
-        }, 15000);
-    </script>
+    function endCrashRound() {
+        clearInterval(crashInterval);
+        crashState = 'crashed';
+        currentMultiplier = crashPoint;
+        betPlaced = false;
+        
+        document.getElementById('crash-multiplier').textContent = currentMultiplier.toFixed(2) + 'x';
+        document.getElementById('crash-multiplier').style.color = 'var(--red)';
+        document.getElementById('crash-status').textContent = 'Crashed!';
+        document.getElementById('crash-curve').style.height = '0%';
+        
+        const btn = document.getElementById('btn-crash-action');
+        btn.className = 'btn-bet disabled';
+        btn.textContent = 'Crashed';
+        tg.HapticFeedback.notificationOccurred('error');
+
+        // Add to history
+        const histDiv = document.getElementById('crash-history');
+        const badge = document.createElement('div');
+        badge.className = currentMultiplier >= 2.0 ? 'crash-badge good' : 'crash-badge bad';
+        badge.textContent = currentMultiplier.toFixed(2) + 'x';
+        histDiv.insertBefore(badge, histDiv.firstChild);
+
+        setTimeout(() => {
+            crashState = 'waiting';
+            document.getElementById('crash-status').textContent = 'Waiting for next round...';
+            document.getElementById('crash-multiplier').textContent = '1.00x';
+            document.getElementById('crash-multiplier').style.color = '#fff';
+            
+            btn.className = 'btn-bet place';
+            btn.textContent = 'Place Bet';
+            
+            setTimeout(startCrashRound, 3000);
+        }, 3000);
+    }
+    
+    // Auto-start the loop
+    setTimeout(startCrashRound, 2000);
+
+    /* ── DATA FETCHING (Mocked & Real API blend for demonstration) ── */
+    async function fetchAll() {
+        try {
+            // Simulated User Data update
+            // Replace with actual API fetches as in original code
+            const mockUserBalance = 5.50; // Mock starting balance to test Crash
+            const mockInviteCount = 5;    // Set to 5 to unlock wallet
+
+            userBalance = mockUserBalance;
+            inviteCount = mockInviteCount;
+            
+            document.getElementById('user-balance').textContent = userBalance.toFixed(2);
+            document.getElementById('invite-count').textContent = `${inviteCount} friends`;
+
+            const pct = Math.min((inviteCount / 5) * 100, 100);
+            document.getElementById('lock-progress').style.width = pct + '%';
+
+            if (inviteCount >= 5) {
+                document.getElementById('withdraw-locked').classList.add('hidden');
+                document.getElementById('withdraw-unlocked').classList.remove('hidden');
+            } else {
+                document.getElementById('withdraw-locked').classList.remove('hidden');
+                document.getElementById('withdraw-unlocked').classList.add('hidden');
+            }
+
+            // Tasks Mock
+            document.getElementById('tasks-container').innerHTML = `
+                <div class="task-item" id="task-1">
+                    <div class="task-icon">📢</div>
+                    <div style="flex:1;min-width:0">
+                        <div class="task-name">Sponsor Channel</div>
+                        <div class="task-reward">+0.5 TON</div>
+                    </div>
+                    <div class="task-actions">
+                        <a href="#" class="btn-join">Join</a>
+                        <button class="btn-verify" onclick="tg.showAlert('Verified!')">Check</button>
+                    </div>
+                </div>`;
+            
+            // Leaderboard Mock
+            document.getElementById('top-inviters').innerHTML = `
+                <div class="leader-item rank-1">
+                    <div class="rank-num">🥇</div><div class="leader-avatar">A</div>
+                    <div><div class="leader-name">Alex</div><div class="leader-stat">120 friends invited</div></div>
+                    <div class="leader-reward">50.0 TON</div>
+                </div>
+                <div class="leader-item rank-2">
+                    <div class="rank-num">🥈</div><div class="leader-avatar">S</div>
+                    <div><div class="leader-name">Sam</div><div class="leader-stat">95 friends invited</div></div>
+                    <div class="leader-reward">35.0 TON</div>
+                </div>`;
+
+        } catch(e) { console.error(e); }
+    }
+
+    /* ── HOLD-TO-SUBMIT ── */
+    const holdBtn = document.getElementById('hold-btn');
+    const holdFill = document.getElementById('hold-progress');
+    let holdTimer, progress = 0;
+
+    function startHold(e) {
+        e.preventDefault();
+        const amount = parseFloat(document.getElementById('withdraw-amount').value);
+        const address = document.getElementById('withdraw-address').value.trim();
+
+        if (!amount || amount < 1.0 || amount > userBalance || !address) {
+            tg.HapticFeedback.notificationOccurred('error');
+            tg.showAlert('Invalid amount (min 1.0, max balance) or missing address.');
+            return;
+        }
+        tg.HapticFeedback.impactOccurred('medium');
+        holdTimer = setInterval(() => {
+            progress += 4;
+            holdFill.style.width = `${Math.min(progress,100)}%`;
+            if (progress >= 100) { clearInterval(holdTimer); submitWithdrawal(amount, address); }
+        }, 80);
+    }
+
+    function stopHold() {
+        clearInterval(holdTimer);
+        if (progress < 100) { progress = 0; holdFill.style.width = '0%'; }
+    }
+
+    if(holdBtn) {
+        holdBtn.addEventListener('touchstart', startHold, {passive:false});
+        holdBtn.addEventListener('touchend', stopHold);
+        holdBtn.addEventListener('mousedown', startHold);
+        holdBtn.addEventListener('mouseup', stopHold);
+        holdBtn.addEventListener('mouseleave', stopHold);
+    }
+
+    async function submitWithdrawal(amount, address) {
+        tg.HapticFeedback.notificationOccurred('success');
+        holdBtn.style.pointerEvents = 'none';
+        tg.showPopup({title:'Request Submitted', message:`${amount} TON withdrawal is under review.`, buttons:[{type:'close'}]});
+        
+        userBalance -= amount;
+        document.getElementById('user-balance').textContent = userBalance.toFixed(2);
+        
+        progress = 0; holdFill.style.width = '0%';
+        setTimeout(() => { holdBtn.style.pointerEvents = 'auto'; }, 3000);
+    }
+
+    function copyInviteLink() {
+        tg.HapticFeedback.impactOccurred('light');
+        navigator.clipboard?.writeText(`https://t.me/GramGift_io_bot?start=${userId}`);
+        tg.showAlert('Invite link copied!');
+    }
+
+    /* ── INIT ── */
+    fetchAll();
+</script>
 </body>
 </html>

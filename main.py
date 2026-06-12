@@ -2,6 +2,7 @@ import os
 import time
 import asyncio
 import httpx
+import random
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,7 +23,7 @@ bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTM
 dp = Dispatcher()
 app = FastAPI()
 
-# --- CORS Middleware (Crucial for WebApp integration) ---
+# --- CORS Middleware ---
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -39,6 +40,14 @@ withdrawal_requests = {}
 USERS = {}
 APPROVED_WITHDRAWALS = [] 
 CHANNELS = {}
+
+# --- Crash Game State ---
+CRASH_GAME = {
+    "status": "waiting",  # waiting, flying, crashed
+    "multiplier": 1.0,
+    "time_left": 5.0,
+    "bets": {}  # user_id -> {"amount": float, "cashed_out": bool, "profit": float}
+}
 
 # --- Admin FSM States ---
 class AdminConfig(StatesGroup):
@@ -63,6 +72,34 @@ async def update_ton_price():
         except Exception as e:
             print(f"Price update error: {e}")
         await asyncio.sleep(300)
+
+async def run_crash_game():
+    """Background loop to manage the Crash game engine state."""
+    while True:
+        if CRASH_GAME["status"] == "waiting":
+            CRASH_GAME["time_left"] -= 0.1
+            if CRASH_GAME["time_left"] <= 0:
+                CRASH_GAME["status"] = "flying"
+                CRASH_GAME["multiplier"] = 1.0
+            await asyncio.sleep(0.1)
+
+        elif CRASH_GAME["status"] == "flying":
+            # Increment multiplier exponentially
+            CRASH_GAME["multiplier"] += 0.005 * CRASH_GAME["multiplier"]
+            
+            # Crash probability algorithm (~1.5% chance per tick to crash)
+            if random.random() < 0.015 or CRASH_GAME["multiplier"] > 50.0:
+                CRASH_GAME["status"] = "crashed"
+                CRASH_GAME["time_left"] = 4.0  # Reset delay before next round
+            await asyncio.sleep(0.1)
+
+        elif CRASH_GAME["status"] == "crashed":
+            CRASH_GAME["time_left"] -= 0.1
+            if CRASH_GAME["time_left"] <= 0:
+                CRASH_GAME["status"] = "waiting"
+                CRASH_GAME["time_left"] = 5.0
+                CRASH_GAME["bets"] = {}  # Clear previous bets
+            await asyncio.sleep(0.1)
 
 async def send_webapp_button(user_id: int):
     webapp_info = types.WebAppInfo(url=WEBAPP_URL)
@@ -163,7 +200,6 @@ async def admin_panel(message: types.Message):
         reply_markup=kb
     )
 
-# --- Admin Pool Command ---
 @dp.message(Command("pool"), F.from_user.id == ADMIN_ID)
 async def admin_set_pool(message: types.Message, command: CommandObject):
     global TOTAL_POOL
@@ -185,7 +221,6 @@ async def admin_set_pool(message: types.Message, command: CommandObject):
     except:
         await message.answer("❌ <b>Formatting Error:</b> Invalid numeric inputs. Syntax: <code>/pool set 1000</code>")
 
-# --- Broadcast Logic ---
 @dp.callback_query(F.data == "admin_broadcast", F.from_user.id == ADMIN_ID)
 async def start_broadcast(callback: types.CallbackQuery, state: FSMContext):
     await state.set_state(AdminBroadcast.waiting_for_message)
@@ -224,7 +259,6 @@ async def cancel_broadcast(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.edit_text("❌ Broadcast canceled.")
     await state.clear()
 
-# --- Admin Channels Add Logic ---
 @dp.callback_query(F.data == "admin_add", F.from_user.id == ADMIN_ID)
 async def admin_add_ch_start(callback: types.CallbackQuery, state: FSMContext):
     await state.set_state(AdminConfig.waiting_for_channel)
@@ -259,7 +293,6 @@ async def admin_add_ch_type(callback: types.CallbackQuery, state: FSMContext):
     await state.clear()
     await callback.answer()
 
-# --- Admin Channels Remove Logic ---
 @dp.callback_query(F.data == "admin_remove_req", F.from_user.id == ADMIN_ID)
 async def admin_remove_ch_start(callback: types.CallbackQuery, state: FSMContext):
     if not CHANNELS:
@@ -285,7 +318,6 @@ async def admin_list_ch(callback: types.CallbackQuery):
     await callback.message.answer(text)
     await callback.answer()
 
-# --- WITHDRAWALS APPROVE HANDLER ---
 @dp.callback_query(F.data.startswith("approve_"))
 async def approve_withdraw(callback: types.CallbackQuery):
     global TOTAL_POOL
@@ -315,7 +347,6 @@ async def approve_withdraw(callback: types.CallbackQuery):
         
     await callback.answer() 
 
-# --- WITHDRAWALS REJECT HANDLER ---
 @dp.callback_query(F.data.startswith("reject_"))
 async def reject_withdraw(callback: types.CallbackQuery):
     if callback.from_user.id != ADMIN_ID: 
@@ -448,7 +479,70 @@ async def api_withdraw(request: Request):
     )
     return {"status": "success"}
 
+# --- CRASH GAME ENDPOINTS ---
+@app.get("/api/crash/state")
+async def crash_state(user_id: str = None):
+    user_bet = None
+    if user_id and user_id in CRASH_GAME["bets"]:
+        user_bet = CRASH_GAME["bets"][user_id]
+        
+    return {
+        "status": CRASH_GAME["status"],
+        "multiplier": CRASH_GAME["multiplier"],
+        "time_left": max(0.0, CRASH_GAME["time_left"]),
+        "user_bet": user_bet
+    }
+
+@app.post("/api/crash/bet")
+async def crash_bet(request: Request):
+    data = await request.json()
+    u_id = str(data.get("user_id"))
+    amount = float(data.get("amount", 0))
+
+    if CRASH_GAME["status"] != "waiting":
+        return {"status": "error", "message": "Round has already started! Wait for the next round."}
+    if u_id not in USERS:
+        return {"status": "error", "message": "User not found."}
+    if USERS[u_id]["balance"] < amount:
+        return {"status": "error", "message": "Insufficient balance."}
+    if u_id in CRASH_GAME["bets"]:
+        return {"status": "error", "message": "Bet already placed."}
+
+    # Deduct balance and register bet
+    USERS[u_id]["balance"] -= amount
+    CRASH_GAME["bets"][u_id] = {
+        "amount": amount,
+        "cashed_out": False,
+        "profit": 0.0
+    }
+    return {"status": "success"}
+
+@app.post("/api/crash/cashout")
+async def crash_cashout(request: Request):
+    data = await request.json()
+    u_id = str(data.get("user_id"))
+
+    if CRASH_GAME["status"] != "flying":
+        return {"status": "error", "message": "Cannot cash out at this time!"}
+    if u_id not in CRASH_GAME["bets"]:
+        return {"status": "error", "message": "No active bet found for this round."}
+        
+    bet = CRASH_GAME["bets"][u_id]
+    if bet["cashed_out"]:
+        return {"status": "error", "message": "Already cashed out!"}
+
+    # Lock in profit
+    profit = bet["amount"] * CRASH_GAME["multiplier"]
+    bet["cashed_out"] = True
+    bet["profit"] = profit
+
+    # Add to user balance
+    USERS[u_id]["balance"] += profit
+
+    return {"status": "success", "profit": profit}
+
 @app.on_event("startup")
 async def on_startup():
     asyncio.create_task(update_ton_price())
+    asyncio.create_task(run_crash_game()) # Launch crash game loop
     asyncio.create_task(dp.start_polling(bot))

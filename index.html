@@ -41,6 +41,7 @@
             overflow-x: hidden;
         }
 
+        /* Ambient background */
         body::before {
             content: '';
             position: fixed;
@@ -68,126 +69,449 @@
             border-bottom: 1px solid var(--border);
         }
 
-        .logo { display: flex; align-items: center; gap: 8px; }
-        .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--primary), #4F8FC0); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
-        .logo-text { font-weight: 700; font-size: 1.05rem; letter-spacing: -0.3px; color: var(--text); }
+        .logo {
+            display: flex; align-items: center; gap: 8px;
+        }
+        .logo-icon {
+            width: 32px; height: 32px;
+            background: linear-gradient(135deg, var(--primary), #4F8FC0);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px;
+        }
+        .logo-text {
+            font-weight: 700; font-size: 1.05rem; letter-spacing: -0.3px;
+            color: var(--text);
+        }
         .logo-text span { color: var(--primary); }
 
-        .live-pill { display: flex; align-items: center; gap: 6px; padding: 5px 12px; background: var(--green-dim); border: 1px solid rgba(74,222,128,0.2); border-radius: 20px; font-size: 0.78rem; font-weight: 600; color: var(--green); font-family: var(--mono); }
-        .live-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; animation: blink 1.6s ease-in-out infinite; }
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+        .live-pill {
+            display: flex; align-items: center; gap: 6px;
+            padding: 5px 12px;
+            background: var(--green-dim);
+            border: 1px solid rgba(74,222,128,0.2);
+            border-radius: 20px;
+            font-size: 0.78rem; font-weight: 600; color: var(--green);
+            font-family: var(--mono);
+        }
+        .live-dot {
+            width: 6px; height: 6px;
+            background: var(--green);
+            border-radius: 50%;
+            animation: blink 1.6s ease-in-out infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
 
         /* ── PAGE WRAPPER ── */
         .page { padding: 20px; position: relative; z-index: 1; }
         .page.hidden { display: none !important; }
 
         /* ── POOL HERO ── */
-        .pool-hero { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 28px 24px; margin-bottom: 16px; text-align: center; position: relative; overflow: hidden; }
-        .pool-hero::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--primary), transparent); }
-        .pool-label { font-size: 0.75rem; font-weight: 500; letter-spacing: 2px; color: var(--text-dim); text-transform: uppercase; margin-bottom: 12px; }
-        .pool-number { font-family: var(--mono); font-size: 3rem; font-weight: 700; color: var(--text); line-height: 1; margin-bottom: 6px; }
+        .pool-hero {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 28px 24px;
+            margin-bottom: 16px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .pool-hero::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+        .pool-label {
+            font-size: 0.75rem; font-weight: 500; letter-spacing: 2px;
+            color: var(--text-dim); text-transform: uppercase; margin-bottom: 12px;
+        }
+        .pool-number {
+            font-family: var(--mono);
+            font-size: 3rem; font-weight: 700;
+            color: var(--text);
+            line-height: 1;
+            margin-bottom: 6px;
+        }
         .pool-number span { color: var(--primary); }
-        .pool-usd { font-size: 0.85rem; color: var(--text-dim); font-weight: 500; background: var(--surface-2); padding: 4px 14px; border-radius: 20px; display: inline-block; border: 1px solid var(--border); }
+        .pool-usd {
+            font-size: 0.85rem; color: var(--text-dim); font-weight: 500;
+            background: var(--surface-2);
+            padding: 4px 14px; border-radius: 20px;
+            display: inline-block;
+            border: 1px solid var(--border);
+        }
 
         /* ── BALANCE CARD ── */
-        .balance-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 16px; }
-        .balance-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
-        .balance-label { font-size: 0.8rem; font-weight: 500; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
-        .balance-value { font-family: var(--mono); font-size: 1.6rem; font-weight: 700; color: var(--text); }
+        .balance-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .balance-row {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 20px; padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+        .balance-label {
+            font-size: 0.8rem; font-weight: 500; color: var(--text-dim);
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .balance-value {
+            font-family: var(--mono);
+            font-size: 1.6rem; font-weight: 700; color: var(--text);
+        }
         .balance-value em { color: var(--primary); font-style: normal; font-size: 1rem; }
 
-        /* ── WITHDRAW ── */
-        .locked-state { display: flex; align-items: center; gap: 14px; background: var(--surface-2); border: 1px solid rgba(248,113,113,0.18); border-radius: 14px; padding: 16px; position: relative; overflow: hidden; }
-        .locked-state::after { content: ''; position: absolute; top:0; left:0; width: 4px; height: 100%; background: var(--red); }
+        /* ── WITHDRAW LOCKED ── */
+        .locked-state {
+            display: flex; align-items: center; gap: 14px;
+            background: var(--red-dim);
+            border: 1px solid rgba(248,113,113,0.18);
+            border-radius: 14px;
+            padding: 16px;
+        }
         .locked-icon { font-size: 1.4rem; color: var(--red); flex-shrink: 0; }
-        .locked-text { font-size: 0.85rem; color: #E8EAED; line-height: 1.5; }
-        .locked-text strong { color: var(--primary); }
-        .progress-bar-wrap { height: 4px; background: rgba(255,255,255,0.05); border-radius: 4px; margin-top: 12px; }
-        .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--red), var(--primary)); border-radius: 4px; transition: width 0.5s ease; }
+        .locked-text { font-size: 0.85rem; color: #FCA5A5; line-height: 1.5; }
+        .progress-bar-wrap {
+            height: 4px; background: rgba(248,113,113,0.15);
+            border-radius: 4px; margin-top: 12px;
+        }
+        .progress-bar-fill {
+            height: 100%; background: var(--red);
+            border-radius: 4px; transition: width 0.5s ease;
+        }
 
-        .unlocked-actions { display: flex; flex-direction: column; gap: 12px; }
-        .crash-transfer-btn { background: linear-gradient(135deg, rgba(168,85,247,0.15), rgba(99,179,255,0.15)); border: 1px solid rgba(168,85,247,0.3); border-radius: 14px; padding: 14px; color: #E8EAED; font-family: var(--font); font-size: 0.9rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
-        .crash-transfer-btn:active { transform: scale(0.98); }
-        .crash-transfer-btn span { color: #C084FC; }
-
-        /* ── INPUTS ── */
+        /* ── FORM INPUTS ── */
         .input-group { margin-bottom: 12px; }
-        .input-label { display: block; font-size: 0.78rem; font-weight: 600; color: var(--text-dim); letter-spacing: 0.5px; margin-bottom: 6px; text-transform: uppercase; }
-        input[type="number"], input[type="text"] { width: 100%; padding: 14px 16px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-family: var(--font); font-size: 0.95rem; outline: none; transition: border-color 0.2s, box-shadow 0.2s; }
+        .input-label {
+            display: block; font-size: 0.78rem; font-weight: 600;
+            color: var(--text-dim); letter-spacing: 0.5px;
+            margin-bottom: 6px; text-transform: uppercase;
+        }
+        input[type="number"], input[type="text"] {
+            width: 100%; padding: 14px 16px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
         input::placeholder { color: var(--muted); }
-        input:focus { border-color: var(--border-active); box-shadow: 0 0 0 3px rgba(99,179,255,0.08); }
+        input:focus {
+            border-color: var(--border-active);
+            box-shadow: 0 0 0 3px rgba(99,179,255,0.08);
+        }
 
         /* ── HOLD BUTTON ── */
-        .hold-wrap { position: relative; border-radius: 14px; overflow: hidden; margin-top: 16px; cursor: pointer; }
-        .hold-fill { position: absolute; top: 0; left: 0; height: 100%; background: linear-gradient(90deg, var(--green), #22C55E); width: 0%; transition: width 0.08s linear; z-index: 1; }
-        .hold-btn { position: relative; z-index: 2; width: 100%; padding: 16px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 14px; color: var(--text); font-family: var(--font); font-size: 0.95rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; user-select: none; -webkit-user-select: none; }
+        .hold-wrap {
+            position: relative; border-radius: 14px; overflow: hidden;
+            margin-top: 16px; cursor: pointer;
+        }
+        .hold-fill {
+            position: absolute; top: 0; left: 0; height: 100%;
+            background: linear-gradient(90deg, var(--green), #22C55E);
+            width: 0%; transition: width 0.08s linear;
+            z-index: 1;
+        }
+        .hold-btn {
+            position: relative; z-index: 2;
+            width: 100%; padding: 16px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 0.95rem; font-weight: 600;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            user-select: none; -webkit-user-select: none;
+        }
+        .hold-btn:active { opacity: 0.9; }
 
-        /* ── SQUAD ── */
-        .squad-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 16px; }
-        .squad-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+        /* ── HISTORY ITEMS ── */
+        .section-label {
+            font-size: 0.75rem; font-weight: 600; letter-spacing: 1.5px;
+            color: var(--text-dim); text-transform: uppercase;
+            margin: 24px 0 12px;
+        }
+        .history-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 14px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+        .hist-amount {
+            font-family: var(--mono); font-weight: 700; font-size: 1rem;
+        }
+        .hist-date { font-size: 0.78rem; color: var(--text-dim); margin-top: 2px; }
+        .status-chip {
+            padding: 4px 10px; border-radius: 8px;
+            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+        }
+        .chip-Pending { background: rgba(245,158,11,0.15); color: #FCD34D; border: 1px solid rgba(245,158,11,0.25); }
+        .chip-Approved { background: var(--green-dim); color: var(--green); border: 1px solid rgba(74,222,128,0.25); }
+        .chip-Rejected { background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,113,113,0.25); }
+
+        /* ── SQUAD / INVITE ── */
+        .squad-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .squad-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 18px;
+        }
         .squad-title { font-weight: 700; font-size: 1rem; }
-        .squad-count { font-family: var(--mono); font-size: 0.85rem; background: var(--primary-dim); color: var(--primary); padding: 4px 10px; border-radius: 8px; font-weight: 700; }
-        .invite-btn { width: 100%; padding: 14px; background: var(--primary-dim); border: 1px solid var(--border-active); border-radius: 12px; color: var(--primary); font-family: var(--font); font-size: 0.95rem; font-weight: 600; cursor: pointer; margin-bottom: 18px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        
-        /* ── CRASH GAME ── */
-        .crash-history { display: flex; gap: 8px; overflow-x: auto; padding: 4px 0 12px 0; scrollbar-width: none; }
-        .crash-history::-webkit-scrollbar { display: none; }
-        .history-badge { padding: 4px 10px; border-radius: 8px; font-family: var(--mono); font-size: 0.82rem; font-weight: 700; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.04); }
-        .badge-low { background: rgba(248,113,113,0.12); color: var(--red); border-color: rgba(248,113,113,0.2); }
-        .badge-med { background: rgba(99,179,255,0.12); color: var(--primary); border-color: rgba(99,179,255,0.2); }
-        .badge-high { background: rgba(244,197,66,0.12); color: var(--gold); border-color: rgba(244,197,66,0.2); }
+        .squad-count {
+            font-family: var(--mono); font-size: 0.85rem;
+            background: var(--primary-dim);
+            color: var(--primary);
+            padding: 4px 10px; border-radius: 8px;
+            font-weight: 700;
+        }
 
-        .crash-board { background: radial-gradient(circle at center, #1e293b 0%, #060810 100%); border: 1px solid rgba(168,85,247,0.3); border-radius: 20px; height: 260px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; box-shadow: 0 0 30px rgba(168,85,247,0.05); margin-bottom: 20px; }
-        .crash-curve-wrap { position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: flex-end; z-index: 1; }
-        .crash-curve { width: 100%; height: 0%; background: linear-gradient(to top, rgba(168,85,247,0.2), transparent); border-top: 2px solid #C084FC; box-shadow: 0 -10px 20px rgba(168,85,247,0.2); transition: height 0.1s linear; }
-        .crash-multiplier { font-size: 4.5rem; font-family: var(--mono); font-weight: 700; color: #fff; z-index: 2; text-shadow: 0 0 20px rgba(255,255,255,0.3); transition: color 0.2s; }
-        .crash-status { font-size: 0.9rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; z-index: 2; margin-top: 10px; font-weight: 600; }
-        .crash-controls { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 20px; }
-        .bet-row { display: flex; gap: 12px; margin-bottom: 16px; }
-        .bet-input-wrap { flex: 1; position: relative; }
-        .bet-input-wrap input { padding-right: 45px; }
-        .bet-currency { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-size: 0.8rem; font-weight: 700; color: var(--primary); }
-        .btn-bet { width: 100%; padding: 16px; border: none; border-radius: 14px; font-family: var(--font); font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 1px; }
-        .btn-bet.place { background: var(--primary); color: #000; box-shadow: 0 4px 15px rgba(99,179,255,0.3); }
-        .btn-bet.cashout { background: var(--green); color: #000; box-shadow: 0 4px 15px rgba(74,222,128,0.3); }
-        .btn-bet.disabled { background: var(--surface-2); color: var(--muted); cursor: not-allowed; box-shadow: none; }
+        .invite-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary-dim);
+            border: 1px solid var(--border-active);
+            border-radius: 12px;
+            color: var(--primary);
+            font-family: var(--font);
+            font-size: 0.95rem; font-weight: 600;
+            cursor: pointer; margin-bottom: 18px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: background 0.2s;
+        }
+        .invite-btn:active { background: rgba(99,179,255,0.2); }
+
+        .friend-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .friend-item:last-child { border-bottom: none; }
+        .friend-avatar {
+            width: 40px; height: 40px; border-radius: 12px;
+            background: var(--surface-2);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; font-weight: 700; color: var(--primary);
+            border: 1px solid var(--border); flex-shrink: 0;
+        }
+        .friend-name { font-weight: 600; font-size: 0.9rem; }
+        .friend-reward { font-family: var(--mono); font-size: 0.82rem; color: var(--green); margin-left: auto; font-weight: 700; }
 
         /* ── TASKS ── */
-        .task-item { display: flex; align-items: center; justify-content: space-between; background: var(--surface-2); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 10px; }
-        .task-icon { width: 42px; height: 42px; border-radius: 12px; background: var(--primary-dim); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; flex-shrink: 0; margin-right: 12px; }
+        .task-item {
+            display: flex; align-items: center; justify-content: space-between;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 10px;
+            transition: border-color 0.2s;
+        }
+        .task-item:active { border-color: var(--border-active); }
+        .task-icon {
+            width: 42px; height: 42px; border-radius: 12px;
+            background: var(--primary-dim);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; color: var(--primary); flex-shrink: 0;
+            margin-right: 12px;
+        }
         .task-name { font-weight: 600; font-size: 0.9rem; }
         .task-reward { font-size: 0.8rem; color: var(--green); font-weight: 600; margin-top: 2px; font-family: var(--mono); }
         .task-actions { display: flex; gap: 8px; flex-shrink: 0; }
-        .btn-join { padding: 8px 14px; background: transparent; border: 1px solid var(--border-active); border-radius: 10px; color: var(--primary); font-family: var(--font); font-size: 0.82rem; font-weight: 600; text-decoration: none; }
-        .btn-verify { padding: 8px 14px; background: var(--green-dim); border: 1px solid rgba(74,222,128,0.2); border-radius: 10px; color: var(--green); font-family: var(--font); font-size: 0.82rem; font-weight: 600; cursor: pointer; }
+        .btn-join {
+            padding: 8px 14px;
+            background: transparent;
+            border: 1px solid var(--border-active);
+            border-radius: 10px;
+            color: var(--primary);
+            font-family: var(--font); font-size: 0.82rem; font-weight: 600;
+            cursor: pointer; text-decoration: none;
+            transition: background 0.2s;
+        }
+        .btn-join:active { background: var(--primary-dim); }
+        .btn-verify {
+            padding: 8px 14px;
+            background: var(--green-dim);
+            border: 1px solid rgba(74,222,128,0.2);
+            border-radius: 10px;
+            color: var(--green);
+            font-family: var(--font); font-size: 0.82rem; font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-verify:active { background: rgba(74,222,128,0.25); }
+
+        /* ── AD BANNER ── */
+        .ad-banner {
+            background: linear-gradient(135deg, rgba(168,85,247,0.08), rgba(99,179,255,0.05));
+            border: 1px solid rgba(168,85,247,0.2);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 14px;
+            display: flex; align-items: flex-start; gap: 12px;
+        }
+        .ad-icon { font-size: 1.3rem; color: #C084FC; flex-shrink: 0; margin-top: 1px; }
+        .ad-text { font-size: 0.83rem; line-height: 1.6; color: #D1D5DB; }
+        .ad-link { color: #C084FC; font-weight: 700; text-decoration: none; }
+
+        /* ── VIP BANNER ── */
+        .vip-banner {
+            background: linear-gradient(135deg, rgba(244,197,66,0.08), rgba(251,146,60,0.05));
+            border: 1px solid rgba(244,197,66,0.2);
+            border-radius: 16px;
+            padding: 18px;
+            margin-top: 20px;
+        }
+        .vip-header {
+            display: flex; align-items: center; gap: 8px;
+            margin-bottom: 10px;
+        }
+        .vip-icon { font-size: 1.2rem; color: var(--gold); }
+        .vip-title { font-weight: 700; font-size: 0.95rem; color: var(--gold); }
+        .vip-text { font-size: 0.83rem; line-height: 1.7; color: #D1D5DB; }
+        .vip-link { color: var(--gold); font-weight: 700; text-decoration: none; }
 
         /* ── LEADERBOARD ── */
-        .leader-item { display: flex; align-items: center; gap: 12px; padding: 14px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 8px; }
-        .rank-num { font-family: var(--mono); font-size: 0.82rem; font-weight: 700; color: var(--text-dim); width: 24px; text-align: center; flex-shrink: 0; }
+        .leader-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            margin-bottom: 8px;
+        }
+        .rank-num {
+            font-family: var(--mono); font-size: 0.82rem; font-weight: 700;
+            color: var(--text-dim); width: 24px; text-align: center; flex-shrink: 0;
+        }
         .rank-1 .rank-num { color: var(--gold); font-size: 1rem; }
         .rank-2 .rank-num { color: #E2E8F0; }
         .rank-3 .rank-num { color: #CD7F32; }
-        .leader-avatar { width: 38px; height: 38px; border-radius: 10px; background: var(--surface); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; color: var(--primary); border: 1px solid var(--border); flex-shrink: 0; }
+        .leader-avatar {
+            width: 38px; height: 38px; border-radius: 10px;
+            background: var(--surface);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.9rem; color: var(--primary);
+            border: 1px solid var(--border); flex-shrink: 0;
+        }
         .leader-name { font-weight: 600; font-size: 0.88rem; }
-        .leader-reward { font-family: var(--mono); font-size: 0.88rem; font-weight: 700; color: var(--green); margin-left: auto; }
+        .leader-stat { font-size: 0.75rem; color: var(--text-dim); margin-top: 1px; }
+        .leader-reward {
+            font-family: var(--mono); font-size: 0.88rem; font-weight: 700;
+            color: var(--green); margin-left: auto;
+        }
 
-        .section-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-bottom: 16px; }
-        .section-card-title { font-weight: 700; font-size: 1rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .payout-item {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+        .payout-name { font-weight: 600; font-size: 0.88rem; }
+        .payout-amount {
+            font-family: var(--mono); font-weight: 700; color: var(--green);
+            font-size: 0.88rem;
+        }
 
-        /* ── NAVIGATION ── */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 50; display: flex; background: rgba(6,8,16,0.92); backdrop-filter: blur(20px); border-top: 1px solid var(--border); padding: 0; }
-        .nav-tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 12px 0 16px; color: var(--text-dim); cursor: pointer; position: relative; transition: color 0.2s; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.3px; }
+        /* ── SECTION CARD ── */
+        .section-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .section-card-title {
+            font-weight: 700; font-size: 1rem;
+            margin-bottom: 16px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .title-icon { color: var(--primary); }
+
+        /* ── BOTTOM NAV ── */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+            display: flex;
+            background: rgba(6,8,16,0.92);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border);
+            padding: 0;
+        }
+        .nav-tab {
+            flex: 1;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            gap: 4px;
+            padding: 12px 0 16px;
+            color: var(--text-dim);
+            cursor: pointer;
+            position: relative;
+            transition: color 0.2s;
+            font-size: 0.7rem; font-weight: 600; letter-spacing: 0.3px;
+        }
         .nav-tab svg { width: 22px; height: 22px; stroke-width: 1.8; }
-        .nav-tab.active { color: var(--primary); }
-        .nav-tab.active::before { content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 2px; background: var(--primary); border-radius: 0 0 2px 2px; }
+        .nav-tab.active {
+            color: var(--primary);
+        }
+        .nav-tab.active::before {
+            content: '';
+            position: absolute; top: 0; left: 20%; right: 20%;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 0 0 2px 2px;
+        }
+        .nav-notif {
+            position: absolute; top: 10px; right: calc(50% - 16px);
+            width: 8px; height: 8px;
+            background: var(--red);
+            border-radius: 50%; border: 2px solid var(--bg);
+            display: none;
+        }
+        .has-notif .nav-notif { display: block; }
 
-        .empty-state { text-align: center; padding: 32px 20px; color: var(--text-dim); font-size: 0.9rem; }
+        /* ── EMPTY STATE ── */
+        .empty-state {
+            text-align: center; padding: 32px 20px;
+            color: var(--text-dim); font-size: 0.9rem;
+        }
+        .empty-state svg {
+            width: 40px; height: 40px;
+            stroke: var(--muted); margin-bottom: 12px;
+        }
+
+        /* ── ANIMATIONS ── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
         .fade-up { animation: fadeUp 0.4s cubic-bezier(0.25,0.46,0.45,0.94) forwards; }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
+<!-- TOP BAR -->
 <div class="topbar">
     <div class="logo">
         <div class="logo-icon">💎</div>
@@ -195,19 +519,22 @@
     </div>
     <div class="live-pill">
         <div class="live-dot"></div>
-        <span id="online-count">0</span> Online
+        <span id="online-count">1</span> Online
     </div>
 </div>
 
-<!-- WALLET TAB -->
+<!-- MAIN TAB -->
 <div class="page fade-up" id="tab-main">
+
+    <!-- Pool Hero -->
     <div class="pool-hero">
         <div class="pool-label">Total Reward Pool</div>
-        <div class="pool-number"><span id="pool-amount">0</span> <span style="color:var(--primary)">TON</span></div>
+        <div class="pool-number"><span id="pool-amount">—</span> <span style="color:var(--primary)">TON</span></div>
         <br>
-        <div class="pool-usd" id="usd-value">≈ $0 USD</div>
+        <div class="pool-usd" id="usd-value">≈ $… USD</div>
     </div>
 
+    <!-- Balance + Withdraw -->
     <div class="balance-card">
         <div class="balance-row">
             <div>
@@ -216,98 +543,87 @@
             </div>
         </div>
 
+        <!-- Locked state -->
         <div id="withdraw-locked" class="locked-state">
             <div class="locked-icon">🔒</div>
-            <div class="locked-text" style="flex:1">
-                Collect referrals below to earn TON and unlock your Wallet! (Invite <strong>5 friends</strong>)
+            <div class="locked-text">
+                Invite <strong>5 friends</strong> to unlock withdrawals.<br>
                 <div class="progress-bar-wrap">
                     <div class="progress-bar-fill" id="lock-progress" style="width:0%"></div>
                 </div>
             </div>
         </div>
 
-        <div id="withdraw-unlocked" class="hidden unlocked-actions">
-            <div style="font-size:0.85rem; color:var(--green); font-weight:600; margin-bottom: 8px;">
-                ✅ Wallet Unlocked! Withdraw or Multiply in Crash.
+        <!-- Unlocked state -->
+        <div id="withdraw-unlocked" class="hidden">
+            <div class="input-group">
+                <label class="input-label">Amount (min 1.0 TON)</label>
+                <input type="number" id="withdraw-amount" placeholder="0.00" step="0.1" min="1.0">
             </div>
-            <div style="background:var(--surface-2); padding:16px; border-radius:14px; border:1px solid var(--border);">
-                <div class="input-group">
-                    <label class="input-label">Amount (min 1.0 TON)</label>
-                    <input type="number" id="withdraw-amount" placeholder="0.00" step="0.1" min="1.0">
-                </div>
-                <div class="input-group">
-                    <label class="input-label">TON Wallet Address</label>
-                    <input type="text" id="withdraw-address" placeholder="EQ…">
-                </div>
-                <div class="hold-wrap" id="hold-btn">
-                    <div class="hold-fill" id="hold-progress"></div>
-                    <button class="hold-btn">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                        Hold to Withdraw
-                    </button>
-                </div>
+            <div class="input-group">
+                <label class="input-label">TON Wallet Address</label>
+                <input type="text" id="withdraw-address" placeholder="EQ…">
             </div>
-            <div class="crash-transfer-btn" onclick="switchTab('crash')">
-                <span>🚀</span> Play Crash & Multiply Balance
+            <div class="hold-wrap" id="hold-btn">
+                <div class="hold-fill" id="hold-progress"></div>
+                <button class="hold-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    Hold to Confirm Withdrawal
+                </button>
+            </div>
+        </div>
+
+        <!-- History -->
+        <div id="history-section" class="hidden">
+            <div class="section-label">Withdrawal History</div>
+            <div id="history-list"></div>
+            <div id="vip-fast-track" class="vip-banner hidden">
+                <div class="vip-header">
+                    <div class="vip-icon">⚡</div>
+                    <div class="vip-title">Instant Approval Track</div>
+                </div>
+                <p class="vip-text">
+                    To skip the queue and get your payout <strong>instantly</strong>, send <strong style="color:var(--gold)">15 Telegram Stars</strong> to our official support at
+                    <a href="https://t.me/GiftGram_Sup" target="_blank" class="vip-link">@GiftGram_Sup</a>
+                    with your User ID.
+                </p>
             </div>
         </div>
     </div>
 
+    <!-- Squad / Invite -->
     <div class="squad-card">
         <div class="squad-header">
-            <div class="squad-title">Earn TON via Referrals</div>
+            <div class="squad-title">Your Squad</div>
             <div class="squad-count" id="invite-count">0 friends</div>
         </div>
         <button class="invite-btn" onclick="copyInviteLink()">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
             Copy Invite Link
         </button>
-    </div>
-</div>
-
-<!-- CRASH TAB -->
-<div class="page hidden" id="tab-crash">
-    <div class="section-card fade-up" style="padding: 16px; margin-bottom: 16px;">
-        <!-- Crash Game History Bar -->
-        <div class="crash-history" id="crash-history"></div>
-
-        <div class="crash-board">
-            <div class="crash-curve-wrap">
-                <div class="crash-curve" id="crash-curve"></div>
+        <div id="invite-list">
+            <div class="empty-state" style="padding:16px;">
+                <div style="font-size:1.5rem;margin-bottom:6px;">👥</div>
+                No friends invited yet
             </div>
-            <div class="crash-multiplier" id="crash-multiplier">1.00x</div>
-            <div class="crash-status" id="crash-status">Syncing...</div>
-        </div>
-
-        <div class="crash-controls">
-            <div class="balance-row" style="margin-bottom:12px; padding-bottom:12px;">
-                <div class="balance-label">Crash Balance</div>
-                <div class="balance-value" style="font-size:1.2rem;"><span id="crash-user-balance">0.00</span> <em>TON</em></div>
-            </div>
-            <div class="bet-row">
-                <div class="bet-input-wrap">
-                    <input type="number" id="crash-bet-amount" placeholder="Bet Amount" value="1.0" min="0.1" step="0.1">
-                    <span class="bet-currency">TON</span>
-                </div>
-            </div>
-            <button class="btn-bet place" id="btn-crash-action" onclick="handleCrashAction()">Place Bet</button>
         </div>
     </div>
 </div>
 
-<!-- EARN TASKS TAB -->
+<!-- TASKS TAB -->
 <div class="page hidden" id="tab-tasks">
-    <!-- Ad & Support Notice Card -->
-    <div style="background: linear-gradient(135deg, rgba(99,179,255,0.08), rgba(6,8,16,0.6)); border: 1px dashed var(--border-active); padding: 14px 16px; border-radius: 16px; margin-bottom: 16px; font-size: 0.85rem; line-height: 1.6; color: var(--text); direction: rtl; text-align: right; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
-        📢 <b>همکاری و تبلیغات کاندیداها:</b><br>
-        برای ثبت کانال، گروه یا پروژه خود در این بخش و جذب ممبرهای کاملاً واقعی، می‌توانید به آیدی پشتیبانی مرکزی ما 
-        <a href="https://t.me/GiftGram_Sup" target="_blank" style="color: var(--primary); text-decoration: none; font-weight: 700; font-family: var(--mono);">@GiftGram_Sup</a> 
-        پیام ارسال کنید.
+    <div class="ad-banner fade-up">
+        <div class="ad-icon">📢</div>
+        <div class="ad-text">
+            Promote your channel to thousands of active users.
+            Contact <a href="https://t.me/GiftGram_Sup" target="_blank" class="ad-link">@GiftGram_Sup</a> for advertising.
+        </div>
     </div>
 
     <div class="section-card fade-up">
         <div class="section-card-title">
-            <span class="title-icon">🎯</span> Earn Extra TON
+            <span class="title-icon">🎯</span>
+            Earn TON
         </div>
         <p style="font-size:0.83rem; color:var(--text-dim); margin:0 0 18px 0; line-height:1.6;">
             Join channels below and verify membership to earn TON directly to your balance.
@@ -318,25 +634,35 @@
     </div>
 </div>
 
-<!-- LEADERS TAB -->
+<!-- LEADERBOARD TAB -->
 <div class="page hidden" id="tab-leaderboard">
     <div class="section-card fade-up">
-        <div class="section-card-title"><span>🏆</span> Top Inviters</div>
-        <div id="top-inviters"><div class="empty-state">Loading…</div></div>
+        <div class="section-card-title">
+            <span>🏆</span> Top Inviters
+        </div>
+        <div id="top-inviters">
+            <div class="empty-state">Loading…</div>
+        </div>
+    </div>
+
+    <div class="section-card fade-up">
+        <div class="section-card-title">
+            <span style="color:var(--green)">⚡</span> Live Payouts
+        </div>
+        <div id="recent-payouts">
+            <div class="empty-state">Loading…</div>
+        </div>
     </div>
 </div>
 
-<!-- BOTTOM NAVIGATION -->
+<!-- BOTTOM NAV -->
 <div class="bottom-nav">
     <div class="nav-tab active" id="nav-main" onclick="switchTab('main')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-        Wallet
-    </div>
-    <div class="nav-tab" id="nav-crash" onclick="switchTab('crash')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/></svg>
-        Crash 🚀
+        Dashboard
     </div>
     <div class="nav-tab" id="nav-tasks" onclick="switchTab('tasks')">
+        <div class="nav-notif"></div>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         Earn
     </div>
@@ -353,239 +679,178 @@
     tg.setBackgroundColor('#060810');
 
     const userId = tg.initDataUnsafe?.user?.id?.toString() || '0';
-    
-    let userBalance = 0.00;
     let inviteCount = 0;
-    let crashState = 'waiting';
-    let betPlaced = false;
-    let isSyncingCrash = false; // Prevents request blocking and heavy network overlapping
 
+    /* ── TAB SWITCHING ── */
     function switchTab(name) {
-        ['main','crash','tasks','leaderboard'].forEach(t => {
+        ['main','tasks','leaderboard'].forEach(t => {
             document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== name);
             document.getElementById(`nav-${t}`).classList.toggle('active', t === name);
         });
+        if (name === 'tasks') document.getElementById('nav-tasks').classList.remove('has-notif');
         tg.HapticFeedback.selectionChanged();
-        if (name === 'crash') {
-            syncCrashState(); // Immediate sync on tab switch to bypass layout delays
-        }
     }
 
-    async function fetchUserData() {
+    /* ── DATA FETCHING ── */
+    async function fetchAll() {
         try {
-            const res = await fetch(`/api/user/${userId}`);
-            const data = await res.json();
-            userBalance = data.balance || 0;
-            inviteCount = data.invite_count || 0;
+            const [liveRes, userRes] = await Promise.all([
+                fetch(`/api/data?user_id=${userId}`),
+                userId !== '0' ? fetch(`/api/user/${userId}`) : null
+            ]);
 
-            document.getElementById('user-balance').textContent = userBalance.toFixed(2);
-            document.getElementById('crash-user-balance').textContent = userBalance.toFixed(2);
-            document.getElementById('invite-count').textContent = `${inviteCount} friends`;
-            
-            const pct = Math.min((inviteCount / 5) * 100, 100);
-            document.getElementById('lock-progress').style.width = pct + '%';
+            const live = await liveRes.json();
+            document.getElementById('pool-amount').textContent = Number(live.total_pool).toLocaleString();
+            document.getElementById('usd-value').textContent =
+                `≈ $${(live.total_pool * live.ton_price).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})} USD`;
+            document.getElementById('online-count').textContent = live.online_count || 1;
 
-            if (inviteCount >= 5) {
-                document.getElementById('withdraw-locked').classList.add('hidden');
-                document.getElementById('withdraw-unlocked').classList.remove('hidden');
-            } else {
-                document.getElementById('withdraw-locked').classList.remove('hidden');
-                document.getElementById('withdraw-unlocked').classList.add('hidden');
+            if (userRes) {
+                const user = await userRes.json();
+                document.getElementById('user-balance').textContent = user.balance.toFixed(2);
+                inviteCount = user.invite_count;
+                document.getElementById('invite-count').textContent = `${inviteCount} friends`;
+
+                const pct = Math.min((inviteCount / 5) * 100, 100);
+                document.getElementById('lock-progress').style.width = pct + '%';
+
+                if (inviteCount >= 5) {
+                    document.getElementById('withdraw-locked').classList.add('hidden');
+                    document.getElementById('withdraw-unlocked').classList.remove('hidden');
+                } else {
+                    document.getElementById('withdraw-locked').classList.remove('hidden');
+                    document.getElementById('withdraw-unlocked').classList.add('hidden');
+                }
+
+                if (user.withdrawals?.length) {
+                    document.getElementById('history-section').classList.remove('hidden');
+                    document.getElementById('vip-fast-track').classList.remove('hidden');
+                    document.getElementById('history-list').innerHTML = user.withdrawals.map(w => `
+                        <div class="history-item">
+                            <div>
+                                <div class="hist-amount">${w.amount} TON</div>
+                                <div class="hist-date">${w.date}</div>
+                            </div>
+                            <div class="status-chip chip-${w.status}">${w.status}</div>
+                        </div>
+                    `).join('');
+                }
+
+                // Friends list
+                const invList = document.getElementById('invite-list');
+                if (user.invites?.length) {
+                    invList.innerHTML = user.invites.map(inv => `
+                        <div class="friend-item">
+                            <div class="friend-avatar">${(inv.name||'U')[0].toUpperCase()}</div>
+                            <div class="friend-name">${inv.name}</div>
+                            <div class="friend-reward">+${inv.reward} TON</div>
+                        </div>
+                    `).join('');
+                } else {
+                    invList.innerHTML = `<div class="empty-state" style="padding:16px;"><div style="font-size:1.5rem;margin-bottom:6px;">👥</div>No friends invited yet</div>`;
+                }
+
+                if (user.has_new_tasks) document.getElementById('nav-tasks').classList.add('has-notif');
             }
-        } catch (e) { console.error(e); }
-    }
+        } catch(e) { console.error(e); }
 
-    async function fetchGlobalData() {
-        try {
-            const res = await fetch(`/api/data?user_id=${userId}`);
-            const data = await res.json();
-            document.getElementById('pool-amount').textContent = data.total_pool.toLocaleString();
-            document.getElementById('usd-value').textContent = `≈ $${(data.total_pool * data.ton_price).toLocaleString()} USD`;
-            document.getElementById('online-count').textContent = data.online_count;
-        } catch (e) { console.error(e); }
+        fetchTasks();
+        fetchLeaderboard();
     }
 
     async function fetchTasks() {
+        if (userId === '0') return;
         try {
             const res = await fetch(`/api/tasks/${userId}`);
             const data = await res.json();
-            const container = document.getElementById('tasks-container');
-            
-            if (!data.tasks || data.tasks.length === 0) {
-                container.innerHTML = '<div class="empty-state">No available tasks right now. Check back later!</div>';
+            const box = document.getElementById('tasks-container');
+
+            if (!data.tasks?.length) {
+                box.innerHTML = `<div class="empty-state">
+                    <div style="font-size:2rem;margin-bottom:8px">✅</div>
+                    All tasks completed!
+                </div>`;
                 return;
             }
-            
-            container.innerHTML = data.tasks.map((t, i) => `
-                <div class="task-item" id="task-${i}">
-                    <div class="task-icon">🐸</div>
+
+            box.innerHTML = data.tasks.map(task => `
+                <div class="task-item" id="task-${task.channel}">
+                    <div class="task-icon">📢</div>
                     <div style="flex:1;min-width:0">
-                        <div class="task-name">${t.channel}</div>
-                        <div class="task-reward">+${t.reward} TON</div>
+                        <div class="task-name">${task.channel}</div>
+                        <div class="task-reward">+${task.reward} TON</div>
                     </div>
                     <div class="task-actions">
-                        <a href="https://t.me/${t.channel.replace('@', '')}" target="_blank" class="btn-join">Join</a>
-                        <button class="btn-verify" onclick="verifyTask('${t.channel}')">Check</button>
+                        <a href="https://t.me/${task.channel.replace('@','')}" target="_blank" class="btn-join">Join</a>
+                        <button class="btn-verify" onclick="verifyTask('${task.channel}')">Check</button>
                     </div>
-                </div>`).join('');
-        } catch (e) { console.error(e); }
-    }
-
-    async function verifyTask(channel) {
-        try {
-            const res = await fetch('/api/check_task', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: userId, channel: channel })
-            });
-            const data = await res.json();
-            if (data.status === 'success') {
-                tg.showAlert(`Verified! You earned ${data.reward} TON 💎`);
-                fetchUserData();
-                fetchTasks();
-            } else {
-                tg.showAlert(data.message || 'Verification failed. Make sure you joined the channel!');
-            }
-        } catch (e) { console.error(e); }
+                </div>
+            `).join('');
+        } catch(e) {}
     }
 
     async function fetchLeaderboard() {
         try {
             const res = await fetch('/api/leaderboard');
             const data = await res.json();
-            const container = document.getElementById('top-inviters');
-            
-            if (!data.leaders || data.leaders.length === 0) {
-                container.innerHTML = '<div class="empty-state">No leaders yet. Be the first!</div>';
-                return;
-            }
-            
-            container.innerHTML = data.leaders.map((l, i) => `
-                <div class="leader-item rank-${i+1}">
-                    <div class="rank-num">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</div>
-                    <div class="leader-avatar">${l.name.charAt(0).toUpperCase()}</div>
-                    <div><div class="leader-name">${l.name}</div><div class="leader-stat" style="font-size:0.8rem;color:var(--text-dim)">${l.invites} friends</div></div>
-                    <div class="leader-reward">${l.reward.toFixed(2)} TON</div>
-                </div>`).join('');
-        } catch (e) { console.error(e); }
-    }
 
-    /* ── CRASH GAME REALTIME LOGIC ── */
-    async function syncCrashState() {
-        if (isSyncingCrash) return; 
-        isSyncingCrash = true;
-
-        try {
-            const res = await fetch(`/api/crash/state?user_id=${userId}`);
-            const data = await res.json();
-            
-            crashState = data.status;
-            const userBet = data.user_bet;
-            const btn = document.getElementById('btn-crash-action');
-
-            // 1. Render Multiplier History Dynamic Badges
-            if (data.history) {
-                const historyContainer = document.getElementById('crash-history');
-                historyContainer.innerHTML = data.history.map(val => {
-                    let badgeClass = 'badge-low';
-                    if (val >= 10.0) badgeClass = 'badge-high';
-                    else if (val >= 2.0) badgeClass = 'badge-med';
-                    return `<div class="history-badge ${badgeClass}">${val.toFixed(2)}x</div>`;
+            const topBox = document.getElementById('top-inviters');
+            if (data.leaders?.length) {
+                topBox.innerHTML = data.leaders.map((l, i) => {
+                    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`;
+                    const init = (l.name||'U')[0].toUpperCase();
+                    return `
+                    <div class="leader-item rank-${i+1}">
+                        <div class="rank-num">${medal}</div>
+                        <div class="leader-avatar">${init}</div>
+                        <div>
+                            <div class="leader-name">${l.name}</div>
+                            <div class="leader-stat">${l.invites} friends invited</div>
+                        </div>
+                        <div class="leader-reward">${l.reward.toFixed(1)} TON</div>
+                    </div>`;
                 }).join('');
+            } else {
+                topBox.innerHTML = `<div class="empty-state">No leaders yet — be the first!</div>`;
             }
 
-            // 2. Control state rendering Engine
-            if (crashState === 'waiting') {
-                document.getElementById('crash-multiplier').textContent = data.time_left.toFixed(1) + 's';
-                document.getElementById('crash-multiplier').style.color = '#fff';
-                document.getElementById('crash-status').textContent = 'Next round starting...';
-                document.getElementById('crash-curve').style.height = '0%';
-
-                if (userBet) {
-                    btn.className = 'btn-bet disabled';
-                    btn.textContent = 'Bet Placed. Waiting...';
-                    betPlaced = true;
-                } else {
-                    btn.className = 'btn-bet place';
-                    btn.textContent = 'Place Bet';
-                    betPlaced = false;
-                }
-            } else if (crashState === 'flying') {
-                document.getElementById('crash-multiplier').textContent = data.multiplier.toFixed(2) + 'x';
-                document.getElementById('crash-multiplier').style.color = '#fff';
-                document.getElementById('crash-status').textContent = 'Graph is flying!';
-                const h = Math.min(100, ((data.multiplier - 1) / 3) * 100);
-                document.getElementById('crash-curve').style.height = `${h}%`;
-
-                if (userBet && !userBet.cashed_out) {
-                    btn.className = 'btn-bet cashout';
-                    btn.textContent = `Cash Out ${(userBet.amount * data.multiplier).toFixed(2)}`;
-                    betPlaced = true;
-                } else if (userBet && userBet.cashed_out) {
-                    btn.className = 'btn-bet disabled';
-                    btn.textContent = `Cashed Out: +${userBet.profit.toFixed(2)} TON`;
-                    betPlaced = false;
-                } else {
-                    btn.className = 'btn-bet disabled';
-                    btn.textContent = 'Wait for next round';
-                    betPlaced = false;
-                }
-            } else if (crashState === 'crashed') {
-                document.getElementById('crash-multiplier').textContent = data.multiplier.toFixed(2) + 'x';
-                document.getElementById('crash-multiplier').style.color = 'var(--red)';
-                document.getElementById('crash-status').textContent = 'Crashed!';
-                document.getElementById('crash-curve').style.height = '0%';
-                btn.className = 'btn-bet disabled';
-                btn.textContent = 'Crashed';
-                betPlaced = false;
+            const payBox = document.getElementById('recent-payouts');
+            if (data.recent?.length) {
+                payBox.innerHTML = data.recent.map(p => `
+                    <div class="payout-item">
+                        <div class="payout-name">${p.name}</div>
+                        <div class="payout-amount">+${p.amount.toFixed(1)} TON</div>
+                    </div>
+                `).join('');
+            } else {
+                payBox.innerHTML = `<div class="empty-state">No recent payouts</div>`;
             }
-        } catch (e) { console.error(e); } finally {
-            isSyncingCrash = false;
-        }
+        } catch(e) {}
     }
 
-    async function handleCrashAction() {
-        if (crashState === 'waiting' && !betPlaced) {
-            const betInput = parseFloat(document.getElementById('crash-bet-amount').value);
-            if (isNaN(betInput) || betInput <= 0 || betInput > userBalance) {
-                tg.showAlert('Invalid bet amount or insufficient balance!');
-                return;
+    async function verifyTask(channel) {
+        tg.HapticFeedback.impactOccurred('light');
+        try {
+            const res = await fetch('/api/check_task', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({user_id: userId, channel})
+            });
+            const data = await res.json();
+            if (data.status === 'success') {
+                tg.HapticFeedback.notificationOccurred('success');
+                tg.showAlert(`✅ Done! +${data.reward} TON added.`);
+                document.getElementById('user-balance').textContent = data.new_balance.toFixed(2);
+                document.getElementById(`task-${channel}`)?.remove();
+                fetchAll();
+            } else {
+                tg.HapticFeedback.notificationOccurred('error');
+                tg.showAlert(data.message);
             }
-            try {
-                const res = await fetch('/api/crash/bet', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_id: userId, amount: betInput })
-                });
-                const data = await res.json();
-                if (data.status === 'success') {
-                    tg.HapticFeedback.impactOccurred('light');
-                    fetchUserData();
-                    syncCrashState();
-                } else {
-                    tg.showAlert(data.message);
-                }
-            } catch (e) {}
-        } else if (crashState === 'flying' && betPlaced) {
-            try {
-                const res = await fetch('/api/crash/cashout', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ user_id: userId })
-                });
-                const data = await res.json();
-                if (data.status === 'success') {
-                    tg.HapticFeedback.notificationOccurred('success');
-                    fetchUserData();
-                    syncCrashState();
-                } else {
-                    tg.showAlert(data.message);
-                }
-            } catch (e) {}
-        }
+        } catch(e) { tg.showAlert('Network error. Try again.'); }
     }
 
-    /* ── WITHDRAW ACTION HOLD ── */
+    /* ── HOLD-TO-SUBMIT ── */
     const holdBtn = document.getElementById('hold-btn');
     const holdFill = document.getElementById('hold-progress');
     let holdTimer, progress = 0;
@@ -595,9 +860,9 @@
         const amount = parseFloat(document.getElementById('withdraw-amount').value);
         const address = document.getElementById('withdraw-address').value.trim();
 
-        if (!amount || amount < 1.0 || amount > userBalance || !address) {
+        if (!amount || amount < 1.0 || !address) {
             tg.HapticFeedback.notificationOccurred('error');
-            tg.showAlert('Invalid amount (min 1.0, max balance) or missing address.');
+            tg.showAlert('Enter a valid amount (min 1.0 TON) and wallet address.');
             return;
         }
         tg.HapticFeedback.impactOccurred('medium');
@@ -613,13 +878,11 @@
         if (progress < 100) { progress = 0; holdFill.style.width = '0%'; }
     }
 
-    if(holdBtn) {
-        holdBtn.addEventListener('touchstart', startHold, {passive:false});
-        holdBtn.addEventListener('touchend', stopHold);
-        holdBtn.addEventListener('mousedown', startHold);
-        holdBtn.addEventListener('mouseup', stopHold);
-        holdBtn.addEventListener('mouseleave', stopHold);
-    }
+    holdBtn.addEventListener('touchstart', startHold, {passive:false});
+    holdBtn.addEventListener('touchend', stopHold);
+    holdBtn.addEventListener('mousedown', startHold);
+    holdBtn.addEventListener('mouseup', stopHold);
+    holdBtn.addEventListener('mouseleave', stopHold);
 
     async function submitWithdrawal(amount, address) {
         tg.HapticFeedback.notificationOccurred('success');
@@ -627,17 +890,17 @@
         try {
             const res = await fetch('/api/withdraw', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: userId, amount: amount, address: address })
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({user_id: userId, amount, address})
             });
             const data = await res.json();
             if (data.status === 'success') {
                 tg.showPopup({title:'Request Submitted', message:`${amount} TON withdrawal is under review.`, buttons:[{type:'close'}]});
-                fetchUserData();
+                fetchAll();
             } else {
-                tg.showAlert(data.message || 'Withdrawal error.');
+                tg.showAlert(data.message || 'Error submitting request.');
             }
-        } catch (e) { tg.showAlert('Network error.'); }
+        } catch(e) { tg.showAlert('Network error!'); }
         progress = 0; holdFill.style.width = '0%';
         setTimeout(() => { holdBtn.style.pointerEvents = 'auto'; }, 3000);
     }
@@ -648,14 +911,9 @@
         tg.showAlert('Invite link copied!');
     }
 
-    // INITIALIZATION & OPTIMIZED POLLING INTERFACES
-    fetchUserData();
-    fetchGlobalData();
-    fetchTasks();
-    fetchLeaderboard();
-    
-    setInterval(fetchGlobalData, 9000);
-    setInterval(syncCrashState, 350); // Fluid fast refresh rate inside safe sync constraints
+    /* ── INIT ── */
+    fetchAll();
+    setInterval(fetchAll, 15000);
 </script>
 </body>
 </html>

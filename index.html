@@ -2,918 +2,224 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GramGift</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gram Prediction - Anime Edition</title>
+    <!-- Tailwind CSS & FontAwesome -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root {
-            --bg: #060810;
-            --surface: #0d1117;
-            --surface-2: #131925;
-            --border: rgba(255,255,255,0.06);
-            --border-active: rgba(99,179,255,0.3);
-            --primary: #63B3FF;
-            --primary-dim: rgba(99,179,255,0.12);
-            --gold: #F4C542;
-            --gold-dim: rgba(244,197,66,0.12);
-            --green: #4ADE80;
-            --green-dim: rgba(74,222,128,0.12);
-            --red: #F87171;
-            --red-dim: rgba(248,113,113,0.12);
-            --muted: #4B5563;
-            --text: #E8EAED;
-            --text-dim: #6B7280;
-            --font: 'Space Grotesk', sans-serif;
-            --mono: 'Space Mono', monospace;
+        /* Anime Inspired Soft Pastel Light Gradient Background */
+        body { 
+            background: linear-gradient(135deg, #f0f4ff 0%, #fbf2f7 50%, #eefcf7 100%); 
+            font-family: system-ui, -apple-system, sans-serif;
+            color: #334155;
         }
-
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
-        body {
-            background: var(--bg);
-            color: var(--text);
-            font-family: var(--font);
-            margin: 0;
-            padding: 0 0 88px 0;
-            min-height: 100vh;
-            overflow-x: hidden;
+        /* Aesthetic Glassmorphic Card Style */
+        .anime-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.04);
         }
-
-        /* Ambient background */
-        body::before {
-            content: '';
-            position: fixed;
-            top: -200px; left: -200px;
-            width: 600px; height: 600px;
-            background: radial-gradient(circle, rgba(99,179,255,0.04) 0%, transparent 70%);
-            pointer-events: none; z-index: 0;
-        }
-        body::after {
-            content: '';
-            position: fixed;
-            bottom: -100px; right: -100px;
-            width: 400px; height: 400px;
-            background: radial-gradient(circle, rgba(244,197,66,0.03) 0%, transparent 70%);
-            pointer-events: none; z-index: 0;
-        }
-
-        /* ── TOP BAR ── */
-        .topbar {
-            position: sticky; top: 0; z-index: 50;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 14px 20px;
-            background: rgba(6,8,16,0.85);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
-        }
-
-        .logo {
-            display: flex; align-items: center; gap: 8px;
-        }
-        .logo-icon {
-            width: 32px; height: 32px;
-            background: linear-gradient(135deg, var(--primary), #4F8FC0);
-            border-radius: 10px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 14px;
-        }
-        .logo-text {
-            font-weight: 700; font-size: 1.05rem; letter-spacing: -0.3px;
-            color: var(--text);
-        }
-        .logo-text span { color: var(--primary); }
-
-        .live-pill {
-            display: flex; align-items: center; gap: 6px;
-            padding: 5px 12px;
-            background: var(--green-dim);
-            border: 1px solid rgba(74,222,128,0.2);
-            border-radius: 20px;
-            font-size: 0.78rem; font-weight: 600; color: var(--green);
-            font-family: var(--mono);
-        }
-        .live-dot {
-            width: 6px; height: 6px;
-            background: var(--green);
-            border-radius: 50%;
-            animation: blink 1.6s ease-in-out infinite;
-        }
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
-        /* ── PAGE WRAPPER ── */
-        .page { padding: 20px; position: relative; z-index: 1; }
-        .page.hidden { display: none !important; }
-
-        /* ── POOL HERO ── */
-        .pool-hero {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 28px 24px;
-            margin-bottom: 16px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        .pool-hero::before {
-            content: '';
-            position: absolute; top: 0; left: 0; right: 0;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--primary), transparent);
-        }
-        .pool-label {
-            font-size: 0.75rem; font-weight: 500; letter-spacing: 2px;
-            color: var(--text-dim); text-transform: uppercase; margin-bottom: 12px;
-        }
-        .pool-number {
-            font-family: var(--mono);
-            font-size: 3rem; font-weight: 700;
-            color: var(--text);
-            line-height: 1;
-            margin-bottom: 6px;
-        }
-        .pool-number span { color: var(--primary); }
-        .pool-usd {
-            font-size: 0.85rem; color: var(--text-dim); font-weight: 500;
-            background: var(--surface-2);
-            padding: 4px 14px; border-radius: 20px;
-            display: inline-block;
-            border: 1px solid var(--border);
-        }
-
-        /* ── BALANCE CARD ── */
-        .balance-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 16px;
-        }
-        .balance-row {
-            display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 20px; padding-bottom: 20px;
-            border-bottom: 1px solid var(--border);
-        }
-        .balance-label {
-            font-size: 0.8rem; font-weight: 500; color: var(--text-dim);
-            text-transform: uppercase; letter-spacing: 1px;
-        }
-        .balance-value {
-            font-family: var(--mono);
-            font-size: 1.6rem; font-weight: 700; color: var(--text);
-        }
-        .balance-value em { color: var(--primary); font-style: normal; font-size: 1rem; }
-
-        /* ── WITHDRAW LOCKED ── */
-        .locked-state {
-            display: flex; align-items: center; gap: 14px;
-            background: var(--red-dim);
-            border: 1px solid rgba(248,113,113,0.18);
-            border-radius: 14px;
-            padding: 16px;
-        }
-        .locked-icon { font-size: 1.4rem; color: var(--red); flex-shrink: 0; }
-        .locked-text { font-size: 0.85rem; color: #FCA5A5; line-height: 1.5; }
-        .progress-bar-wrap {
-            height: 4px; background: rgba(248,113,113,0.15);
-            border-radius: 4px; margin-top: 12px;
-        }
-        .progress-bar-fill {
-            height: 100%; background: var(--red);
-            border-radius: 4px; transition: width 0.5s ease;
-        }
-
-        /* ── FORM INPUTS ── */
-        .input-group { margin-bottom: 12px; }
-        .input-label {
-            display: block; font-size: 0.78rem; font-weight: 600;
-            color: var(--text-dim); letter-spacing: 0.5px;
-            margin-bottom: 6px; text-transform: uppercase;
-        }
-        input[type="number"], input[type="text"] {
-            width: 100%; padding: 14px 16px;
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            color: var(--text);
-            font-family: var(--font);
-            font-size: 0.95rem;
-            outline: none;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        input::placeholder { color: var(--muted); }
-        input:focus {
-            border-color: var(--border-active);
-            box-shadow: 0 0 0 3px rgba(99,179,255,0.08);
-        }
-
-        /* ── HOLD BUTTON ── */
-        .hold-wrap {
-            position: relative; border-radius: 14px; overflow: hidden;
-            margin-top: 16px; cursor: pointer;
-        }
-        .hold-fill {
-            position: absolute; top: 0; left: 0; height: 100%;
-            background: linear-gradient(90deg, var(--green), #22C55E);
-            width: 0%; transition: width 0.08s linear;
-            z-index: 1;
-        }
-        .hold-btn {
-            position: relative; z-index: 2;
-            width: 100%; padding: 16px;
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            color: var(--text);
-            font-family: var(--font);
-            font-size: 0.95rem; font-weight: 600;
-            cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 10px;
-            user-select: none; -webkit-user-select: none;
-        }
-        .hold-btn:active { opacity: 0.9; }
-
-        /* ── HISTORY ITEMS ── */
-        .section-label {
-            font-size: 0.75rem; font-weight: 600; letter-spacing: 1.5px;
-            color: var(--text-dim); text-transform: uppercase;
-            margin: 24px 0 12px;
-        }
-        .history-item {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 14px;
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            margin-bottom: 8px;
-        }
-        .hist-amount {
-            font-family: var(--mono); font-weight: 700; font-size: 1rem;
-        }
-        .hist-date { font-size: 0.78rem; color: var(--text-dim); margin-top: 2px; }
-        .status-chip {
-            padding: 4px 10px; border-radius: 8px;
-            font-size: 0.72rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
-        }
-        .chip-Pending { background: rgba(245,158,11,0.15); color: #FCD34D; border: 1px solid rgba(245,158,11,0.25); }
-        .chip-Approved { background: var(--green-dim); color: var(--green); border: 1px solid rgba(74,222,128,0.25); }
-        .chip-Rejected { background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,113,113,0.25); }
-
-        /* ── SQUAD / INVITE ── */
-        .squad-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 16px;
-        }
-        .squad-header {
-            display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: 18px;
-        }
-        .squad-title { font-weight: 700; font-size: 1rem; }
-        .squad-count {
-            font-family: var(--mono); font-size: 0.85rem;
-            background: var(--primary-dim);
-            color: var(--primary);
-            padding: 4px 10px; border-radius: 8px;
-            font-weight: 700;
-        }
-
-        .invite-btn {
-            width: 100%;
-            padding: 14px;
-            background: var(--primary-dim);
-            border: 1px solid var(--border-active);
-            border-radius: 12px;
-            color: var(--primary);
-            font-family: var(--font);
-            font-size: 0.95rem; font-weight: 600;
-            cursor: pointer; margin-bottom: 18px;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            transition: background 0.2s;
-        }
-        .invite-btn:active { background: rgba(99,179,255,0.2); }
-
-        .friend-item {
-            display: flex; align-items: center; gap: 12px;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border);
-        }
-        .friend-item:last-child { border-bottom: none; }
-        .friend-avatar {
-            width: 40px; height: 40px; border-radius: 12px;
-            background: var(--surface-2);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1rem; font-weight: 700; color: var(--primary);
-            border: 1px solid var(--border); flex-shrink: 0;
-        }
-        .friend-name { font-weight: 600; font-size: 0.9rem; }
-        .friend-reward { font-family: var(--mono); font-size: 0.82rem; color: var(--green); margin-left: auto; font-weight: 700; }
-
-        /* ── TASKS ── */
-        .task-item {
-            display: flex; align-items: center; justify-content: space-between;
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 16px;
-            margin-bottom: 10px;
-            transition: border-color 0.2s;
-        }
-        .task-item:active { border-color: var(--border-active); }
-        .task-icon {
-            width: 42px; height: 42px; border-radius: 12px;
-            background: var(--primary-dim);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.1rem; color: var(--primary); flex-shrink: 0;
-            margin-right: 12px;
-        }
-        .task-name { font-weight: 600; font-size: 0.9rem; }
-        .task-reward { font-size: 0.8rem; color: var(--green); font-weight: 600; margin-top: 2px; font-family: var(--mono); }
-        .task-actions { display: flex; gap: 8px; flex-shrink: 0; }
-        .btn-join {
-            padding: 8px 14px;
-            background: transparent;
-            border: 1px solid var(--border-active);
-            border-radius: 10px;
-            color: var(--primary);
-            font-family: var(--font); font-size: 0.82rem; font-weight: 600;
-            cursor: pointer; text-decoration: none;
-            transition: background 0.2s;
-        }
-        .btn-join:active { background: var(--primary-dim); }
-        .btn-verify {
-            padding: 8px 14px;
-            background: var(--green-dim);
-            border: 1px solid rgba(74,222,128,0.2);
-            border-radius: 10px;
-            color: var(--green);
-            font-family: var(--font); font-size: 0.82rem; font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        .btn-verify:active { background: rgba(74,222,128,0.25); }
-
-        /* ── AD BANNER ── */
-        .ad-banner {
-            background: linear-gradient(135deg, rgba(168,85,247,0.08), rgba(99,179,255,0.05));
-            border: 1px solid rgba(168,85,247,0.2);
-            border-radius: 16px;
-            padding: 16px;
-            margin-bottom: 14px;
-            display: flex; align-items: flex-start; gap: 12px;
-        }
-        .ad-icon { font-size: 1.3rem; color: #C084FC; flex-shrink: 0; margin-top: 1px; }
-        .ad-text { font-size: 0.83rem; line-height: 1.6; color: #D1D5DB; }
-        .ad-link { color: #C084FC; font-weight: 700; text-decoration: none; }
-
-        /* ── VIP BANNER ── */
-        .vip-banner {
-            background: linear-gradient(135deg, rgba(244,197,66,0.08), rgba(251,146,60,0.05));
-            border: 1px solid rgba(244,197,66,0.2);
-            border-radius: 16px;
-            padding: 18px;
-            margin-top: 20px;
-        }
-        .vip-header {
-            display: flex; align-items: center; gap: 8px;
-            margin-bottom: 10px;
-        }
-        .vip-icon { font-size: 1.2rem; color: var(--gold); }
-        .vip-title { font-weight: 700; font-size: 0.95rem; color: var(--gold); }
-        .vip-text { font-size: 0.83rem; line-height: 1.7; color: #D1D5DB; }
-        .vip-link { color: var(--gold); font-weight: 700; text-decoration: none; }
-
-        /* ── LEADERBOARD ── */
-        .leader-item {
-            display: flex; align-items: center; gap: 12px;
-            padding: 14px;
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            margin-bottom: 8px;
-        }
-        .rank-num {
-            font-family: var(--mono); font-size: 0.82rem; font-weight: 700;
-            color: var(--text-dim); width: 24px; text-align: center; flex-shrink: 0;
-        }
-        .rank-1 .rank-num { color: var(--gold); font-size: 1rem; }
-        .rank-2 .rank-num { color: #E2E8F0; }
-        .rank-3 .rank-num { color: #CD7F32; }
-        .leader-avatar {
-            width: 38px; height: 38px; border-radius: 10px;
-            background: var(--surface);
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 0.9rem; color: var(--primary);
-            border: 1px solid var(--border); flex-shrink: 0;
-        }
-        .leader-name { font-weight: 600; font-size: 0.88rem; }
-        .leader-stat { font-size: 0.75rem; color: var(--text-dim); margin-top: 1px; }
-        .leader-reward {
-            font-family: var(--mono); font-size: 0.88rem; font-weight: 700;
-            color: var(--green); margin-left: auto;
-        }
-
-        .payout-item {
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 12px;
-            background: var(--surface-2);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            margin-bottom: 8px;
-        }
-        .payout-name { font-weight: 600; font-size: 0.88rem; }
-        .payout-amount {
-            font-family: var(--mono); font-weight: 700; color: var(--green);
-            font-size: 0.88rem;
-        }
-
-        /* ── SECTION CARD ── */
-        .section-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 16px;
-        }
-        .section-card-title {
-            font-weight: 700; font-size: 1rem;
-            margin-bottom: 16px;
-            display: flex; align-items: center; gap: 8px;
-        }
-        .title-icon { color: var(--primary); }
-
-        /* ── BOTTOM NAV ── */
-        .bottom-nav {
-            position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
-            display: flex;
-            background: rgba(6,8,16,0.92);
-            backdrop-filter: blur(20px);
-            border-top: 1px solid var(--border);
-            padding: 0;
-        }
-        .nav-tab {
-            flex: 1;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            gap: 4px;
-            padding: 12px 0 16px;
-            color: var(--text-dim);
-            cursor: pointer;
-            position: relative;
-            transition: color 0.2s;
-            font-size: 0.7rem; font-weight: 600; letter-spacing: 0.3px;
-        }
-        .nav-tab svg { width: 22px; height: 22px; stroke-width: 1.8; }
-        .nav-tab.active {
-            color: var(--primary);
-        }
-        .nav-tab.active::before {
-            content: '';
-            position: absolute; top: 0; left: 20%; right: 20%;
-            height: 2px;
-            background: var(--primary);
-            border-radius: 0 0 2px 2px;
-        }
-        .nav-notif {
-            position: absolute; top: 10px; right: calc(50% - 16px);
-            width: 8px; height: 8px;
-            background: var(--red);
-            border-radius: 50%; border: 2px solid var(--bg);
-            display: none;
-        }
-        .has-notif .nav-notif { display: block; }
-
-        /* ── EMPTY STATE ── */
-        .empty-state {
-            text-align: center; padding: 32px 20px;
-            color: var(--text-dim); font-size: 0.9rem;
-        }
-        .empty-state svg {
-            width: 40px; height: 40px;
-            stroke: var(--muted); margin-bottom: 12px;
-        }
-
-        /* ── ANIMATIONS ── */
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(16px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .fade-up { animation: fadeUp 0.4s cubic-bezier(0.25,0.46,0.45,0.94) forwards; }
-
-        .hidden { display: none !important; }
+        /* Pastel Glow Effect */
+        .pastel-glow-pink { box-shadow: 0 0 20px rgba(255, 182, 193, 0.6); }
+        .pastel-glow-blue { box-shadow: 0 0 20px rgba(173, 216, 230, 0.6); }
     </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col justify-between pb-24">
 
-<!-- TOP BAR -->
-<div class="topbar">
-    <div class="logo">
-        <div class="logo-icon">💎</div>
-        <div class="logo-text">Gram<span>Gift</span></div>
-    </div>
-    <div class="live-pill">
-        <div class="live-dot"></div>
-        <span id="online-count">1</span> Online
-    </div>
-</div>
+    <!-- REFERRAL LOCK OVERLAY -->
+    <div id="referral-lock" class="fixed inset-0 bg-[#f4f7fe]/95 z-50 flex flex-col items-center justify-center p-6 text-center">
+        <div class="anime-card p-8 rounded-3xl max-w-sm w-full border border-pink-200/50">
+            <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-lock text-3xl text-pink-400"></i>
+            </div>
+            <h2 class="text-2xl font-black text-slate-800 mb-2">Unlock Prediction</h2>
+            <p class="text-slate-500 text-sm mb-6">Invite at least <span class="text-pink-500 font-bold">5 friends</span> to unlock the game. Earn <span class="text-emerald-500 font-bold">0.2 Gram</span> for each invite!</p>
+            
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-200 h-3 rounded-full mb-3 overflow-hidden">
+                <div id="ref-progress" class="bg-gradient-to-r from-sky-400 to-pink-400 h-full w-[40%]"></div>
+            </div>
+            <p class="text-xs text-slate-400 mb-6" id="ref-count">Invites: <span class="text-sky-500 font-bold">2</span> / 5</p>
 
-<!-- MAIN TAB -->
-<div class="page fade-up" id="tab-main">
-
-    <!-- Pool Hero -->
-    <div class="pool-hero">
-        <div class="pool-label">Total Reward Pool</div>
-        <div class="pool-number"><span id="pool-amount">—</span> <span style="color:var(--primary)">TON</span></div>
-        <br>
-        <div class="pool-usd" id="usd-value">≈ $… USD</div>
+            <button onclick="shareLink()" class="w-full bg-gradient-to-r from-sky-400 to-indigo-400 hover:opacity-90 text-white py-3.5 rounded-2xl font-bold shadow-md transition-all transform active:scale-95">
+                <i class="fas fa-user-plus mr-2"></i> Invite Friends (Copy Link)
+            </button>
+        </div>
     </div>
 
-    <!-- Balance + Withdraw -->
-    <div class="balance-card">
-        <div class="balance-row">
-            <div>
-                <div class="balance-label">Your Balance</div>
-                <div class="balance-value"><span id="user-balance">0.00</span> <em>TON</em></div>
+    <!-- MAIN INTERFACE -->
+    <main class="p-4 max-w-md mx-auto w-full flex-grow">
+        
+        <!-- HEADER -->
+        <div class="flex justify-between items-center mb-6 anime-card p-4 rounded-2xl">
+            <div class="flex items-center gap-2">
+                <div class="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse"></div>
+                <span class="text-xs font-semibold text-slate-400 tracking-wider">GRAM / TON LIVE</span>
+            </div>
+            <div class="text-right">
+                <span class="text-[10px] text-slate-400 font-medium block">BALANCE</span>
+                <span class="text-sky-500 font-black text-lg" id="user-balance">0.4 Gram</span>
             </div>
         </div>
 
-        <!-- Locked state -->
-        <div id="withdraw-locked" class="locked-state">
-            <div class="locked-icon">🔒</div>
-            <div class="locked-text">
-                Invite <strong>5 friends</strong> to unlock withdrawals.<br>
-                <div class="progress-bar-wrap">
-                    <div class="progress-bar-fill" id="lock-progress" style="width:0%"></div>
+        <!-- TAB 1: GAME -->
+        <section id="tab-game" class="tab-content">
+            <!-- LIVE CHART -->
+            <div class="anime-card p-4 rounded-3xl mb-6">
+                <canvas id="priceChart" class="w-full h-48"></canvas>
+            </div>
+
+            <!-- PREDICTION CONTROLS -->
+            <div class="anime-card p-6 rounded-3xl text-center">
+                <h3 class="text-lg font-bold text-slate-700 mb-4">Predict Next Market Move</h3>
+                
+                <!-- Timer Selection -->
+                <div class="mb-6 inline-flex flex-col items-center">
+                    <span class="text-xs font-semibold text-slate-400 mb-2">TIME INTERVAL (SEC)</span>
+                    <input type="number" id="predict-time" value="30" min="5" class="w-24 bg-white/80 border border-slate-200 text-center py-2 rounded-xl text-sky-500 font-bold focus:outline-none focus:ring-2 focus:ring-sky-300">
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="makePrediction('UP')" class="bg-gradient-to-br from-emerald-400 to-teal-500 text-white py-4 rounded-2xl font-bold text-lg shadow-sm hover:opacity-95 transition-transform active:scale-95">
+                        <i class="fas fa-arrow-trend-up block text-xl mb-1"></i> GO UP ↑
+                    </button>
+                    <button onclick="makePrediction('DOWN')" class="bg-gradient-to-br from-pink-400 to-rose-500 text-white py-4 rounded-2xl font-bold text-lg shadow-sm hover:opacity-95 transition-transform active:scale-95">
+                        <i class="fas fa-arrow-trend-down block text-xl mb-1"></i> GO DOWN ↓
+                    </button>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <!-- Unlocked state -->
-        <div id="withdraw-unlocked" class="hidden">
-            <div class="input-group">
-                <label class="input-label">Amount (min 1.0 TON)</label>
-                <input type="number" id="withdraw-amount" placeholder="0.00" step="0.1" min="1.0">
-            </div>
-            <div class="input-group">
-                <label class="input-label">TON Wallet Address</label>
-                <input type="text" id="withdraw-address" placeholder="EQ…">
-            </div>
-            <div class="hold-wrap" id="hold-btn">
-                <div class="hold-fill" id="hold-progress"></div>
-                <button class="hold-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="18" height="18"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                    Hold to Confirm Withdrawal
-                </button>
-            </div>
-        </div>
-
-        <!-- History -->
-        <div id="history-section" class="hidden">
-            <div class="section-label">Withdrawal History</div>
-            <div id="history-list"></div>
-            <div id="vip-fast-track" class="vip-banner hidden">
-                <div class="vip-header">
-                    <div class="vip-icon">⚡</div>
-                    <div class="vip-title">Instant Approval Track</div>
+        <!-- TAB 2: LEADERBOARD -->
+        <section id="tab-leaderboard" class="tab-content hidden">
+            <div class="anime-card p-6 rounded-3xl">
+                <h3 class="text-xl font-black text-center text-slate-800 mb-6"><i class="fas fa-crown text-amber-400 mr-2"></i>Top Players</h3>
+                <div class="space-y-3" id="leaderboard-list">
+                    <!-- Loaded dynamically -->
                 </div>
-                <p class="vip-text">
-                    To skip the queue and get your payout <strong>instantly</strong>, send <strong style="color:var(--gold)">15 Telegram Stars</strong> to our official support at
-                    <a href="https://t.me/GiftGram_Sup" target="_blank" class="vip-link">@GiftGram_Sup</a>
-                    with your User ID.
-                </p>
             </div>
-        </div>
-    </div>
+        </section>
 
-    <!-- Squad / Invite -->
-    <div class="squad-card">
-        <div class="squad-header">
-            <div class="squad-title">Your Squad</div>
-            <div class="squad-count" id="invite-count">0 friends</div>
-        </div>
-        <button class="invite-btn" onclick="copyInviteLink()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" width="16" height="16" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
-            Copy Invite Link
+        <!-- TAB 3: REFERRAL / EARN -->
+        <section id="tab-earn" class="tab-content hidden">
+            <div class="anime-card p-6 rounded-3xl text-center">
+                <div class="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-gift text-3xl text-amber-400"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-2">Earn Free Gram</h3>
+                <p class="text-slate-500 text-sm mb-6">Share your unique referral link. Get instantly rewarded with <span class="text-emerald-500 font-bold">0.2 Gram</span> for every active player you bring!</p>
+                <button onclick="shareLink()" class="w-full bg-gradient-to-r from-sky-400 to-indigo-400 text-white py-3.5 rounded-xl font-bold shadow-sm">Copy Referral Link</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- BOTTOM TAB NAVIGATION -->
+    <nav class="fixed bottom-4 left-4 right-4 anime-card py-3 px-6 flex justify-around items-center z-40 max-w-md mx-auto rounded-2xl shadow-lg border border-white/80">
+        <button onclick="switchTab('game')" class="nav-btn flex flex-col items-center gap-1 text-sky-400 transition-colors">
+            <i class="fas fa-chart-line text-lg"></i>
+            <span class="text-[10px] font-bold uppercase tracking-wider">Predict</span>
         </button>
-        <div id="invite-list">
-            <div class="empty-state" style="padding:16px;">
-                <div style="font-size:1.5rem;margin-bottom:6px;">👥</div>
-                No friends invited yet
-            </div>
-        </div>
-    </div>
-</div>
+        <button onclick="switchTab('leaderboard')" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+            <i class="fas fa-trophy text-lg"></i>
+            <span class="text-[10px] font-bold uppercase tracking-wider">Rank</span>
+        </button>
+        <button onclick="switchTab('earn')" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+            <i class="fas fa-users text-lg"></i>
+            <span class="text-[10px] font-bold uppercase tracking-wider">Share</span>
+        </button>
+    </nav>
 
-<!-- TASKS TAB -->
-<div class="page hidden" id="tab-tasks">
-    <div class="ad-banner fade-up">
-        <div class="ad-icon">📢</div>
-        <div class="ad-text">
-            Promote your channel to thousands of active users.
-            Contact <a href="https://t.me/GiftGram_Sup" target="_blank" class="ad-link">@GiftGram_Sup</a> for advertising.
-        </div>
-    </div>
+    <!-- FRONTEND LOGIC -->
+    <script>
+        let userInvites = 5; // Change to test lock screen logic
+        const userId = "user_1024";
 
-    <div class="section-card fade-up">
-        <div class="section-card-title">
-            <span class="title-icon">🎯</span>
-            Earn TON
-        </div>
-        <p style="font-size:0.83rem; color:var(--text-dim); margin:0 0 18px 0; line-height:1.6;">
-            Join channels below and verify membership to earn TON directly to your balance.
-        </p>
-        <div id="tasks-container">
-            <div class="empty-state">Loading tasks…</div>
-        </div>
-    </div>
-</div>
+        if (userInvites >= 5) {
+            document.getElementById('referral-lock').classList.add('hidden');
+        } else {
+            document.getElementById('ref-progress').style.width = (userInvites / 5 * 100) + '%';
+            document.getElementById('ref-count').innerHTML = `Invites: <span class="text-sky-500 font-bold">${userInvites}</span> / 5`;
+        }
 
-<!-- LEADERBOARD TAB -->
-<div class="page hidden" id="tab-leaderboard">
-    <div class="section-card fade-up">
-        <div class="section-card-title">
-            <span>🏆</span> Top Inviters
-        </div>
-        <div id="top-inviters">
-            <div class="empty-state">Loading…</div>
-        </div>
-    </div>
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('text-sky-400', 'text-slate-600'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.add('text-slate-400'));
+            
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            event.currentTarget.classList.remove('text-slate-400');
+            event.currentTarget.classList.add('text-sky-400');
+            
+            if(tabId === 'leaderboard') loadLeaderboard();
+        }
 
-    <div class="section-card fade-up">
-        <div class="section-card-title">
-            <span style="color:var(--green)">⚡</span> Live Payouts
-        </div>
-        <div id="recent-payouts">
-            <div class="empty-state">Loading…</div>
-        </div>
-    </div>
-</div>
+        function shareLink() {
+            const link = `https://t.me/YourBot?start=${userId}`;
+            navigator.clipboard.writeText(link);
+            alert("Referral link copied to clipboard! ✨ Share it with your friends!");
+        }
 
-<!-- BOTTOM NAV -->
-<div class="bottom-nav">
-    <div class="nav-tab active" id="nav-main" onclick="switchTab('main')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-        Dashboard
-    </div>
-    <div class="nav-tab" id="nav-tasks" onclick="switchTab('tasks')">
-        <div class="nav-notif"></div>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-        Earn
-    </div>
-    <div class="nav-tab" id="nav-leaderboard" onclick="switchTab('leaderboard')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-        Leaders
-    </div>
-</div>
-
-<script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
-    tg.setHeaderColor('#060810');
-    tg.setBackgroundColor('#060810');
-
-    const userId = tg.initDataUnsafe?.user?.id?.toString() || '0';
-    let inviteCount = 0;
-
-    /* ── TAB SWITCHING ── */
-    function switchTab(name) {
-        ['main','tasks','leaderboard'].forEach(t => {
-            document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== name);
-            document.getElementById(`nav-${t}`).classList.toggle('active', t === name);
+        // Anime Aesthetics Chart (Soft Mint Line with Pastel Area)
+        const ctx = document.getElementById('priceChart').getContext('2d');
+        let chartData = [2.45, 2.47, 2.44, 2.48, 2.51, 2.49, 2.53];
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['10s', '20s', '30s', '40s', '50s', '60s', 'Now'],
+                datasets: [{
+                    label: 'Gram Price ($)',
+                    data: chartData,
+                    borderColor: '#3cd0aa',
+                    borderWidth: 3,
+                    pointRadius: 2,
+                    pointBackgroundColor: '#3cd0aa',
+                    fill: true,
+                    backgroundColor: 'rgba(60, 208, 170, 0.08)',
+                    tension: 0.4
+                }]
+            },
+            options: { 
+                responsive: true, 
+                plugins: { legend: { display: false } }, 
+                scales: { 
+                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } }, 
+                    y: { grid: { color: '#f1f5f9' }, ticks: { color: '#94a3b8' } } 
+                } 
+            }
         });
-        if (name === 'tasks') document.getElementById('nav-tasks').classList.remove('has-notif');
-        tg.HapticFeedback.selectionChanged();
-    }
 
-    /* ── DATA FETCHING ── */
-    async function fetchAll() {
-        try {
-            const [liveRes, userRes] = await Promise.all([
-                fetch(`/api/data?user_id=${userId}`),
-                userId !== '0' ? fetch(`/api/user/${userId}`) : null
-            ]);
+        function makePrediction(type) {
+            const seconds = document.getElementById('predict-time').value;
+            fetch('/api/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: userId, prediction: type, duration: seconds })
+            })
+            .then(res => res.json())
+            .then(data => alert(data.message));
+        }
 
-            const live = await liveRes.json();
-            document.getElementById('pool-amount').textContent = Number(live.total_pool).toLocaleString();
-            document.getElementById('usd-value').textContent =
-                `≈ $${(live.total_pool * live.ton_price).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})} USD`;
-            document.getElementById('online-count').textContent = live.online_count || 1;
-
-            if (userRes) {
-                const user = await userRes.json();
-                document.getElementById('user-balance').textContent = user.balance.toFixed(2);
-                inviteCount = user.invite_count;
-                document.getElementById('invite-count').textContent = `${inviteCount} friends`;
-
-                const pct = Math.min((inviteCount / 5) * 100, 100);
-                document.getElementById('lock-progress').style.width = pct + '%';
-
-                if (inviteCount >= 5) {
-                    document.getElementById('withdraw-locked').classList.add('hidden');
-                    document.getElementById('withdraw-unlocked').classList.remove('hidden');
-                } else {
-                    document.getElementById('withdraw-locked').classList.remove('hidden');
-                    document.getElementById('withdraw-unlocked').classList.add('hidden');
-                }
-
-                if (user.withdrawals?.length) {
-                    document.getElementById('history-section').classList.remove('hidden');
-                    document.getElementById('vip-fast-track').classList.remove('hidden');
-                    document.getElementById('history-list').innerHTML = user.withdrawals.map(w => `
-                        <div class="history-item">
-                            <div>
-                                <div class="hist-amount">${w.amount} TON</div>
-                                <div class="hist-date">${w.date}</div>
-                            </div>
-                            <div class="status-chip chip-${w.status}">${w.status}</div>
+        function loadLeaderboard() {
+            fetch('/api/leaderboard')
+            .then(res => res.json())
+            .then(data => {
+                const list = document.getElementById('leaderboard-list');
+                list.innerHTML = data.map((user, index) => `
+                    <div class="flex justify-between items-center bg-white/50 p-3 rounded-xl border border-slate-100">
+                        <div class="flex items-center gap-3">
+                            <span class="font-bold text-slate-400 w-5">${index + 1}</span>
+                            <span class="font-semibold text-slate-700">${user.username}</span>
                         </div>
-                    `).join('');
-                }
-
-                // Friends list
-                const invList = document.getElementById('invite-list');
-                if (user.invites?.length) {
-                    invList.innerHTML = user.invites.map(inv => `
-                        <div class="friend-item">
-                            <div class="friend-avatar">${(inv.name||'U')[0].toUpperCase()}</div>
-                            <div class="friend-name">${inv.name}</div>
-                            <div class="friend-reward">+${inv.reward} TON</div>
-                        </div>
-                    `).join('');
-                } else {
-                    invList.innerHTML = `<div class="empty-state" style="padding:16px;"><div style="font-size:1.5rem;margin-bottom:6px;">👥</div>No friends invited yet</div>`;
-                }
-
-                if (user.has_new_tasks) document.getElementById('nav-tasks').classList.add('has-notif');
-            }
-        } catch(e) { console.error(e); }
-
-        fetchTasks();
-        fetchLeaderboard();
-    }
-
-    async function fetchTasks() {
-        if (userId === '0') return;
-        try {
-            const res = await fetch(`/api/tasks/${userId}`);
-            const data = await res.json();
-            const box = document.getElementById('tasks-container');
-
-            if (!data.tasks?.length) {
-                box.innerHTML = `<div class="empty-state">
-                    <div style="font-size:2rem;margin-bottom:8px">✅</div>
-                    All tasks completed!
-                </div>`;
-                return;
-            }
-
-            box.innerHTML = data.tasks.map(task => `
-                <div class="task-item" id="task-${task.channel}">
-                    <div class="task-icon">📢</div>
-                    <div style="flex:1;min-width:0">
-                        <div class="task-name">${task.channel}</div>
-                        <div class="task-reward">+${task.reward} TON</div>
-                    </div>
-                    <div class="task-actions">
-                        <a href="https://t.me/${task.channel.replace('@','')}" target="_blank" class="btn-join">Join</a>
-                        <button class="btn-verify" onclick="verifyTask('${task.channel}')">Check</button>
-                    </div>
-                </div>
-            `).join('');
-        } catch(e) {}
-    }
-
-    async function fetchLeaderboard() {
-        try {
-            const res = await fetch('/api/leaderboard');
-            const data = await res.json();
-
-            const topBox = document.getElementById('top-inviters');
-            if (data.leaders?.length) {
-                topBox.innerHTML = data.leaders.map((l, i) => {
-                    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i+1}`;
-                    const init = (l.name||'U')[0].toUpperCase();
-                    return `
-                    <div class="leader-item rank-${i+1}">
-                        <div class="rank-num">${medal}</div>
-                        <div class="leader-avatar">${init}</div>
-                        <div>
-                            <div class="leader-name">${l.name}</div>
-                            <div class="leader-stat">${l.invites} friends invited</div>
-                        </div>
-                        <div class="leader-reward">${l.reward.toFixed(1)} TON</div>
-                    </div>`;
-                }).join('');
-            } else {
-                topBox.innerHTML = `<div class="empty-state">No leaders yet — be the first!</div>`;
-            }
-
-            const payBox = document.getElementById('recent-payouts');
-            if (data.recent?.length) {
-                payBox.innerHTML = data.recent.map(p => `
-                    <div class="payout-item">
-                        <div class="payout-name">${p.name}</div>
-                        <div class="payout-amount">+${p.amount.toFixed(1)} TON</div>
+                        <span class="text-sky-500 font-bold">${user.score} Gram</span>
                     </div>
                 `).join('');
-            } else {
-                payBox.innerHTML = `<div class="empty-state">No recent payouts</div>`;
-            }
-        } catch(e) {}
-    }
-
-    async function verifyTask(channel) {
-        tg.HapticFeedback.impactOccurred('light');
-        try {
-            const res = await fetch('/api/check_task', {
-                method: 'POST',
-                headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({user_id: userId, channel})
             });
-            const data = await res.json();
-            if (data.status === 'success') {
-                tg.HapticFeedback.notificationOccurred('success');
-                tg.showAlert(`✅ Done! +${data.reward} TON added.`);
-                document.getElementById('user-balance').textContent = data.new_balance.toFixed(2);
-                document.getElementById(`task-${channel}`)?.remove();
-                fetchAll();
-            } else {
-                tg.HapticFeedback.notificationOccurred('error');
-                tg.showAlert(data.message);
-            }
-        } catch(e) { tg.showAlert('Network error. Try again.'); }
-    }
-
-    /* ── HOLD-TO-SUBMIT ── */
-    const holdBtn = document.getElementById('hold-btn');
-    const holdFill = document.getElementById('hold-progress');
-    let holdTimer, progress = 0;
-
-    function startHold(e) {
-        e.preventDefault();
-        const amount = parseFloat(document.getElementById('withdraw-amount').value);
-        const address = document.getElementById('withdraw-address').value.trim();
-
-        if (!amount || amount < 1.0 || !address) {
-            tg.HapticFeedback.notificationOccurred('error');
-            tg.showAlert('Enter a valid amount (min 1.0 TON) and wallet address.');
-            return;
         }
-        tg.HapticFeedback.impactOccurred('medium');
-        holdTimer = setInterval(() => {
-            progress += 4;
-            holdFill.style.width = `${Math.min(progress,100)}%`;
-            if (progress >= 100) { clearInterval(holdTimer); submitWithdrawal(amount, address); }
-        }, 80);
-    }
-
-    function stopHold() {
-        clearInterval(holdTimer);
-        if (progress < 100) { progress = 0; holdFill.style.width = '0%'; }
-    }
-
-    holdBtn.addEventListener('touchstart', startHold, {passive:false});
-    holdBtn.addEventListener('touchend', stopHold);
-    holdBtn.addEventListener('mousedown', startHold);
-    holdBtn.addEventListener('mouseup', stopHold);
-    holdBtn.addEventListener('mouseleave', stopHold);
-
-    async function submitWithdrawal(amount, address) {
-        tg.HapticFeedback.notificationOccurred('success');
-        holdBtn.style.pointerEvents = 'none';
-        try {
-            const res = await fetch('/api/withdraw', {
-                method: 'POST',
-                headers: {'Content-Type':'application/json'},
-                body: JSON.stringify({user_id: userId, amount, address})
-            });
-            const data = await res.json();
-            if (data.status === 'success') {
-                tg.showPopup({title:'Request Submitted', message:`${amount} TON withdrawal is under review.`, buttons:[{type:'close'}]});
-                fetchAll();
-            } else {
-                tg.showAlert(data.message || 'Error submitting request.');
-            }
-        } catch(e) { tg.showAlert('Network error!'); }
-        progress = 0; holdFill.style.width = '0%';
-        setTimeout(() => { holdBtn.style.pointerEvents = 'auto'; }, 3000);
-    }
-
-    function copyInviteLink() {
-        tg.HapticFeedback.impactOccurred('light');
-        navigator.clipboard?.writeText(`https://t.me/GramGift_io_bot?start=${userId}`);
-        tg.showAlert('Invite link copied!');
-    }
-
-    /* ── INIT ── */
-    fetchAll();
-    setInterval(fetchAll, 15000);
-</script>
+    </script>
 </body>
 </html>

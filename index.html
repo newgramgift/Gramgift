@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gram Prediction - Anime Edition</title>
-    <!-- Tailwind CSS & FontAwesome -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Anime Inspired Soft Pastel Light Gradient Background */
@@ -23,15 +22,11 @@
             border: 1px solid rgba(255, 255, 255, 0.6);
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.04);
         }
-        /* Pastel Glow Effect */
-        .pastel-glow-pink { box-shadow: 0 0 20px rgba(255, 182, 193, 0.6); }
-        .pastel-glow-blue { box-shadow: 0 0 20px rgba(173, 216, 230, 0.6); }
     </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between pb-24">
 
-    <!-- REFERRAL LOCK OVERLAY -->
-    <div id="referral-lock" class="fixed inset-0 bg-[#f4f7fe]/95 z-50 flex flex-col items-center justify-center p-6 text-center">
+    <div id="referral-lock" class="fixed inset-0 bg-[#f4f7fe]/95 z-50 flex flex-col items-center justify-center p-6 text-center hidden">
         <div class="anime-card p-8 rounded-3xl max-w-sm w-full border border-pink-200/50">
             <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i class="fas fa-lock text-3xl text-pink-400"></i>
@@ -39,11 +34,10 @@
             <h2 class="text-2xl font-black text-slate-800 mb-2">Unlock Prediction</h2>
             <p class="text-slate-500 text-sm mb-6">Invite at least <span class="text-pink-500 font-bold">5 friends</span> to unlock the game. Earn <span class="text-emerald-500 font-bold">0.2 Gram</span> for each invite!</p>
             
-            <!-- Progress Bar -->
             <div class="w-full bg-slate-200 h-3 rounded-full mb-3 overflow-hidden">
-                <div id="ref-progress" class="bg-gradient-to-r from-sky-400 to-pink-400 h-full w-[40%]"></div>
+                <div id="ref-progress" class="bg-gradient-to-r from-sky-400 to-pink-400 h-full w-[0%]"></div>
             </div>
-            <p class="text-xs text-slate-400 mb-6" id="ref-count">Invites: <span class="text-sky-500 font-bold">2</span> / 5</p>
+            <p class="text-xs text-slate-400 mb-6" id="ref-count">Invites: <span class="text-sky-500 font-bold">0</span> / 5</p>
 
             <button onclick="shareLink()" class="w-full bg-gradient-to-r from-sky-400 to-indigo-400 hover:opacity-90 text-white py-3.5 rounded-2xl font-bold shadow-md transition-all transform active:scale-95">
                 <i class="fas fa-user-plus mr-2"></i> Invite Friends (Copy Link)
@@ -51,10 +45,8 @@
         </div>
     </div>
 
-    <!-- MAIN INTERFACE -->
     <main class="p-4 max-w-md mx-auto w-full flex-grow">
         
-        <!-- HEADER -->
         <div class="flex justify-between items-center mb-6 anime-card p-4 rounded-2xl">
             <div class="flex items-center gap-2">
                 <div class="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse"></div>
@@ -62,28 +54,23 @@
             </div>
             <div class="text-right">
                 <span class="text-[10px] text-slate-400 font-medium block">BALANCE</span>
-                <span class="text-sky-500 font-black text-lg" id="user-balance">0.4 Gram</span>
+                <span class="text-sky-500 font-black text-lg" id="user-balance">0.0 Gram</span>
             </div>
         </div>
 
-        <!-- TAB 1: GAME -->
         <section id="tab-game" class="tab-content">
-            <!-- LIVE CHART -->
             <div class="anime-card p-4 rounded-3xl mb-6">
                 <canvas id="priceChart" class="w-full h-48"></canvas>
             </div>
 
-            <!-- PREDICTION CONTROLS -->
             <div class="anime-card p-6 rounded-3xl text-center">
                 <h3 class="text-lg font-bold text-slate-700 mb-4">Predict Next Market Move</h3>
                 
-                <!-- Timer Selection -->
                 <div class="mb-6 inline-flex flex-col items-center">
                     <span class="text-xs font-semibold text-slate-400 mb-2">TIME INTERVAL (SEC)</span>
                     <input type="number" id="predict-time" value="30" min="5" class="w-24 bg-white/80 border border-slate-200 text-center py-2 rounded-xl text-sky-500 font-bold focus:outline-none focus:ring-2 focus:ring-sky-300">
                 </div>
 
-                <!-- Action Buttons -->
                 <div class="grid grid-cols-2 gap-4">
                     <button onclick="makePrediction('UP')" class="bg-gradient-to-br from-emerald-400 to-teal-500 text-white py-4 rounded-2xl font-bold text-lg shadow-sm hover:opacity-95 transition-transform active:scale-95">
                         <i class="fas fa-arrow-trend-up block text-xl mb-1"></i> GO UP ↑
@@ -95,17 +82,14 @@
             </div>
         </section>
 
-        <!-- TAB 2: LEADERBOARD -->
         <section id="tab-leaderboard" class="tab-content hidden">
             <div class="anime-card p-6 rounded-3xl">
                 <h3 class="text-xl font-black text-center text-slate-800 mb-6"><i class="fas fa-crown text-amber-400 mr-2"></i>Top Players</h3>
                 <div class="space-y-3" id="leaderboard-list">
-                    <!-- Loaded dynamically -->
-                </div>
+                    </div>
             </div>
         </section>
 
-        <!-- TAB 3: REFERRAL / EARN -->
         <section id="tab-earn" class="tab-content hidden">
             <div class="anime-card p-6 rounded-3xl text-center">
                 <div class="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -118,7 +102,6 @@
         </section>
     </main>
 
-    <!-- BOTTOM TAB NAVIGATION -->
     <nav class="fixed bottom-4 left-4 right-4 anime-card py-3 px-6 flex justify-around items-center z-40 max-w-md mx-auto rounded-2xl shadow-lg border border-white/80">
         <button onclick="switchTab('game')" class="nav-btn flex flex-col items-center gap-1 text-sky-400 transition-colors">
             <i class="fas fa-chart-line text-lg"></i>
@@ -134,18 +117,37 @@
         </button>
     </nav>
 
-    <!-- FRONTEND LOGIC -->
     <script>
-        let userInvites = 5; // Change to test lock screen logic
-        const userId = "user_1024";
-
-        if (userInvites >= 5) {
-            document.getElementById('referral-lock').classList.add('hidden');
-        } else {
-            document.getElementById('ref-progress').style.width = (userInvites / 5 * 100) + '%';
-            document.getElementById('ref-count').innerHTML = `Invites: <span class="text-sky-500 font-bold">${userInvites}</span> / 5`;
+        // Connect to Telegram WebApp SDK
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.expand(); // Fullscreen app inside Telegram
+            tg.ready();
         }
 
+        // Safe extraction of real Telegram User ID
+        const userId = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? String(tg.initDataUnsafe.user.id) : "test_user";
+
+        // Fetch User Status on opening
+        function loadUserStatus() {
+            fetch(`/api/user-status?user_id=${userId}`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('user-balance').innerText = `${data.balance} Gram`;
+                if (data.is_locked) {
+                    document.getElementById('referral-lock').classList.remove('hidden');
+                    document.getElementById('ref-progress').style.width = (data.invites / 5 * 100) + '%';
+                    document.getElementById('ref-count').innerHTML = `Invites: <span class="text-sky-500 font-bold">${data.invites}</span> / 5`;
+                } else {
+                    document.getElementById('referral-lock').classList.add('hidden');
+                }
+            }).catch(err => console.error("Error connecting to Python API:", err));
+        }
+
+        // Initial setup run
+        loadUserStatus();
+
+        // Dynamic Tab Switching
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('text-sky-400', 'text-slate-600'));
@@ -158,19 +160,28 @@
             if(tabId === 'leaderboard') loadLeaderboard();
         }
 
+        // Viral Share Link Copying
         function shareLink() {
-            const link = `https://t.me/YourBot?start=${userId}`;
-            navigator.clipboard.writeText(link);
-            alert("Referral link copied to clipboard! ✨ Share it with your friends!");
+            const botUsername = "YourBotName_bot"; // Replace with your actual bot username without @
+            const link = `https://t.me/${botUsername}?start=${userId}`;
+            
+            if (tg && tg.openTelegramLink) {
+                // Inside Telegram, open the direct invite system
+                tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent("Join my team on Gram Prediction Game! 📈")}`);
+            } else {
+                // Fallback copy paste for browser testing
+                navigator.clipboard.writeText(link);
+                alert("Your unique invite link copied to clipboard! ✨");
+            }
         }
 
-        // Anime Aesthetics Chart (Soft Mint Line with Pastel Area)
+        // Anime Aesthetics Chart (Mint Line / Pastel Background)
         const ctx = document.getElementById('priceChart').getContext('2d');
         let chartData = [2.45, 2.47, 2.44, 2.48, 2.51, 2.49, 2.53];
         const chart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['10s', '20s', '30s', '40s', '50s', '60s', 'Now'],
+                labels: ['60s', '50s', '40s', '30s', '20s', '10s', 'Now'],
                 datasets: [{
                     label: 'Gram Price ($)',
                     data: chartData,
@@ -193,6 +204,7 @@
             }
         });
 
+        // Post users prediction to Python backend
         function makePrediction(type) {
             const seconds = document.getElementById('predict-time').value;
             fetch('/api/predict', {
@@ -201,9 +213,13 @@
                 body: JSON.stringify({ user_id: userId, prediction: type, duration: seconds })
             })
             .then(res => res.json())
-            .then(data => alert(data.message));
+            .then(data => {
+                alert(data.message);
+                loadUserStatus(); // Refresh balance
+            });
         }
 
+        // Load Top Players Leaderboard
         function loadLeaderboard() {
             fetch('/api/leaderboard')
             .then(res => res.json())

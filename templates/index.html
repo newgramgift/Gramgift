@@ -3,235 +3,267 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gram Prediction - Anime Edition</title>
+    <title>TON Premium Prediction</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* Anime Inspired Soft Pastel Light Gradient Background */
         body { 
-            background: linear-gradient(135deg, #f0f4ff 0%, #fbf2f7 50%, #eefcf7 100%); 
-            font-family: system-ui, -apple-system, sans-serif;
-            color: #334155;
+            background: linear-gradient(135deg, #f3f6ff 0%, #fef5f9 50%, #f0fdf4 100%); 
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #1e293b;
         }
-        /* Aesthetic Glassmorphic Card Style */
-        .anime-card {
-            background: rgba(255, 255, 255, 0.75);
-            backdrop-filter: blur(12px);
+        .premium-glass {
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.04);
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.03);
         }
+        .price-up { color: #10b981; animation: pulse-green 0.5s; }
+        .price-down { color: #ef4444; animation: pulse-red 0.5s; }
+        @keyframes pulse-green { 0% { background: rgba(16, 185, 129, 0.2); } 100% { background: transparent; } }
+        @keyframes pulse-red { 0% { background: rgba(239, 68, 68, 0.2); } 100% { background: transparent; } }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between pb-24">
+<body class="min-h-screen flex flex-col justify-between pb-28">
 
-    <div id="referral-lock" class="fixed inset-0 bg-[#f4f7fe]/95 z-50 flex flex-col items-center justify-center p-6 text-center hidden">
-        <div class="anime-card p-8 rounded-3xl max-w-sm w-full border border-pink-200/50">
-            <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-lock text-3xl text-pink-400"></i>
+    <div id="referral-lock" class="fixed inset-0 bg-[#f8fafc]/95 z-50 flex flex-col items-center justify-center p-6 text-center hidden">
+        <div class="premium-glass p-8 rounded-[2rem] max-w-sm w-full">
+            <div class="w-14 h-14 bg-indigo-50 text-indigo-500 rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-sm">
+                <i class="fas fa-lock text-2xl"></i>
             </div>
-            <h2 class="text-2xl font-black text-slate-800 mb-2">Unlock Prediction</h2>
-            <p class="text-slate-500 text-sm mb-6">Invite at least <span class="text-pink-500 font-bold">5 friends</span> to unlock the game. Earn <span class="text-emerald-500 font-bold">0.2 Gram</span> for each invite!</p>
+            <h2 class="text-2xl font-extrabold text-slate-800 tracking-tight mb-2">Unlock Platform</h2>
+            <p class="text-slate-500 text-sm leading-relaxed mb-6">This premium prediction panel requires <span class="text-indigo-600 font-semibold">5 referrals</span> to unlock.</p>
             
-            <div class="w-full bg-slate-200 h-3 rounded-full mb-3 overflow-hidden">
-                <div id="ref-progress" class="bg-gradient-to-r from-sky-400 to-pink-400 h-full w-[0%]"></div>
+            <div class="w-full bg-slate-100 h-2.5 rounded-full mb-3 overflow-hidden">
+                <div id="ref-progress" class="bg-indigo-600 h-full w-[0%] transition-all duration-500"></div>
             </div>
-            <p class="text-xs text-slate-400 mb-6" id="ref-count">Invites: <span class="text-sky-500 font-bold">0</span> / 5</p>
+            <p class="text-xs font-semibold text-slate-400 mb-6" id="ref-count">Invites: 0 / 5</p>
 
-            <button onclick="shareLink()" class="w-full bg-gradient-to-r from-sky-400 to-indigo-400 hover:opacity-90 text-white py-3.5 rounded-2xl font-bold shadow-md transition-all transform active:scale-95">
-                <i class="fas fa-user-plus mr-2"></i> Invite Friends (Copy Link)
+            <button onclick="shareLink()" class="w-full bg-slate-900 hover:bg-slate-800 text-white py-4 rounded-xl font-bold shadow-lg shadow-slate-900/10 transition-all transform active:scale-[0.98]">
+                <i class="fas fa-user-plus mr-2 text-sm"></i> Share Invite Link
             </button>
         </div>
     </div>
 
     <main class="p-4 max-w-md mx-auto w-full flex-grow">
         
-        <div class="flex justify-between items-center mb-6 anime-card p-4 rounded-2xl">
-            <div class="flex items-center gap-2">
-                <div class="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse"></div>
-                <span class="text-xs font-semibold text-slate-400 tracking-wider">GRAM / TON LIVE</span>
+        <div class="premium-glass p-5 rounded-[2rem] mb-5 flex justify-between items-center">
+            <div>
+                <span class="text-[10px] uppercase tracking-widest text-slate-400 font-bold block mb-1">Live Asset</span>
+                <div class="flex items-center gap-2">
+                    <span class="font-extrabold text-slate-800 text-lg">TON / USDT</span>
+                    <span id="price-badge" class="text-xs font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">LIVE</span>
+                </div>
             </div>
             <div class="text-right">
-                <span class="text-[10px] text-slate-400 font-medium block">BALANCE</span>
-                <span class="text-sky-500 font-black text-lg" id="user-balance">0.0 Gram</span>
+                <span class="text-[10px] uppercase tracking-widest text-slate-400 font-bold block mb-1">TON Price</span>
+                <span id="live-price" class="text-2xl font-extrabold tracking-tight transition-all duration-300">Fetching...</span>
+            </div>
+        </div>
+
+        <div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white p-6 rounded-[2rem] shadow-xl shadow-indigo-950/10 mb-5 flex justify-between items-center">
+            <div>
+                <span class="text-xs text-indigo-200/70 font-semibold uppercase tracking-wider block mb-1">Your Balance</span>
+                <span id="user-balance" class="text-2xl font-extrabold tracking-tight">0.00 Gram</span>
+            </div>
+            <div class="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center backdrop-blur-md">
+                <i class="fas fa-wallet text-xl text-indigo-200"></i>
             </div>
         </div>
 
         <section id="tab-game" class="tab-content">
-            <div class="anime-card p-4 rounded-3xl mb-6">
-                <canvas id="priceChart" class="w-full h-48"></canvas>
+            <div class="premium-glass p-4 rounded-[2rem] mb-5">
+                <canvas id="realtimeChart" class="w-full h-44"></canvas>
             </div>
 
-            <div class="anime-card p-6 rounded-3xl text-center">
-                <h3 class="text-lg font-bold text-slate-700 mb-4">Predict Next Market Move</h3>
+            <div class="premium-glass p-6 rounded-[2rem] text-center">
+                <span class="text-xs font-bold text-slate-400 uppercase tracking-widest block mb-4">Set Expiry & Forecast</span>
                 
-                <div class="mb-6 inline-flex flex-col items-center">
-                    <span class="text-xs font-semibold text-slate-400 mb-2">TIME INTERVAL (SEC)</span>
-                    <input type="number" id="predict-time" value="30" min="5" class="w-24 bg-white/80 border border-slate-200 text-center py-2 rounded-xl text-sky-500 font-bold focus:outline-none focus:ring-2 focus:ring-sky-300">
+                <div class="mb-6 flex items-center justify-center gap-3 bg-slate-50 border border-slate-100 p-1.5 rounded-2xl w-40 mx-auto">
+                    <span class="text-xs font-bold text-slate-500 ml-2">SECONDS:</span>
+                    <input type="number" id="predict-time" value="30" min="5" class="w-16 bg-white font-extrabold text-center py-1.5 rounded-xl text-slate-800 shadow-sm border border-slate-100 focus:outline-none">
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
-                    <button onclick="makePrediction('UP')" class="bg-gradient-to-br from-emerald-400 to-teal-500 text-white py-4 rounded-2xl font-bold text-lg shadow-sm hover:opacity-95 transition-transform active:scale-95">
-                        <i class="fas fa-arrow-trend-up block text-xl mb-1"></i> GO UP ↑
+                    <button onclick="makePrediction('UP')" class="bg-emerald-500 hover:bg-emerald-600 text-white py-4 rounded-2xl font-bold text-md shadow-lg shadow-emerald-500/10 transition-all transform active:scale-95">
+                        <i class="fas fa-arrow-trend-up mr-1"></i> GO UP
                     </button>
-                    <button onclick="makePrediction('DOWN')" class="bg-gradient-to-br from-pink-400 to-rose-500 text-white py-4 rounded-2xl font-bold text-lg shadow-sm hover:opacity-95 transition-transform active:scale-95">
-                        <i class="fas fa-arrow-trend-down block text-xl mb-1"></i> GO DOWN ↓
+                    <button onclick="makePrediction('DOWN')" class="bg-rose-500 hover:bg-rose-600 text-white py-4 rounded-2xl font-bold text-md shadow-lg shadow-rose-500/10 transition-all transform active:scale-95">
+                        <i class="fas fa-arrow-trend-down mr-1"></i> GO DOWN
                     </button>
                 </div>
             </div>
         </section>
 
         <section id="tab-leaderboard" class="tab-content hidden">
-            <div class="anime-card p-6 rounded-3xl">
-                <h3 class="text-xl font-black text-center text-slate-800 mb-6"><i class="fas fa-crown text-amber-400 mr-2"></i>Top Players</h3>
-                <div class="space-y-3" id="leaderboard-list">
-                    </div>
+            <div class="premium-glass p-6 rounded-[2rem]">
+                <h3 class="text-lg font-extrabold text-slate-800 mb-5 text-center"><i class="fas fa-crown text-amber-400 mr-2"></i>Global Ranking</h3>
+                <div class="space-y-2.5" id="leaderboard-list"></div>
             </div>
         </section>
 
         <section id="tab-earn" class="tab-content hidden">
-            <div class="anime-card p-6 rounded-3xl text-center">
-                <div class="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-gift text-3xl text-amber-400"></i>
+            <div class="premium-glass p-6 rounded-[2rem] text-center">
+                <div class="w-14 h-14 bg-indigo-50 text-indigo-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-share-nodes text-xl"></i>
                 </div>
-                <h3 class="text-xl font-bold text-slate-800 mb-2">Earn Free Gram</h3>
-                <p class="text-slate-500 text-sm mb-6">Share your unique referral link. Get instantly rewarded with <span class="text-emerald-500 font-bold">0.2 Gram</span> for every active player you bring!</p>
-                <button onclick="shareLink()" class="w-full bg-gradient-to-r from-sky-400 to-indigo-400 text-white py-3.5 rounded-xl font-bold shadow-sm">Copy Referral Link</button>
+                <h3 class="text-lg font-extrabold text-slate-800 mb-1">Viral Growth Program</h3>
+                <p class="text-slate-400 text-xs leading-relaxed mb-6 px-4">Get an instant <span class="text-emerald-500 font-bold">0.2 Gram</span> bonus directly credited to your balance for every user who starts the bot using your link.</p>
+                <button onclick="shareLink()" class="w-full bg-slate-900 text-white py-3.5 rounded-xl font-bold shadow-md">Copy Invitation Link</button>
             </div>
         </section>
     </main>
 
-    <nav class="fixed bottom-4 left-4 right-4 anime-card py-3 px-6 flex justify-around items-center z-40 max-w-md mx-auto rounded-2xl shadow-lg border border-white/80">
-        <button onclick="switchTab('game')" class="nav-btn flex flex-col items-center gap-1 text-sky-400 transition-colors">
+    <nav class="fixed bottom-5 left-5 right-5 premium-glass py-3.5 px-6 flex justify-around items-center z-40 max-w-md mx-auto rounded-[1.75rem] shadow-xl border border-white/60">
+        <button onclick="switchTab('game')" class="nav-btn flex flex-col items-center gap-1 text-indigo-600 transition-all">
             <i class="fas fa-chart-line text-lg"></i>
-            <span class="text-[10px] font-bold uppercase tracking-wider">Predict</span>
+            <span class="text-[9px] font-bold uppercase tracking-wider">Predict</span>
         </button>
-        <button onclick="switchTab('leaderboard')" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+        <button onclick="switchTab('leaderboard')" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-all">
             <i class="fas fa-trophy text-lg"></i>
-            <span class="text-[10px] font-bold uppercase tracking-wider">Rank</span>
+            <span class="text-[9px] font-bold uppercase tracking-wider">Leaderboard</span>
         </button>
-        <button onclick="switchTab('earn')" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+        <button onclick="switchTab('earn')" class="nav-btn flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-all">
             <i class="fas fa-users text-lg"></i>
-            <span class="text-[10px] font-bold uppercase tracking-wider">Share</span>
+            <span class="text-[9px] font-bold uppercase tracking-wider">Referral</span>
         </button>
     </nav>
 
     <script>
-        // Connect to Telegram WebApp SDK
         const tg = window.Telegram?.WebApp;
-        if (tg) {
-            tg.expand(); // Fullscreen app inside Telegram
-            tg.ready();
-        }
+        if (tg) { tg.expand(); tg.ready(); }
 
-        // Safe extraction of real Telegram User ID
         const userId = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? String(tg.initDataUnsafe.user.id) : "test_user";
+        let currentTonPrice = 0.0;
 
-        // Fetch User Status on opening
+        // CHART CONFIGURATION
+        const ctx = document.getElementById('realtimeChart').getContext('2d');
+        const maxDataPoints = 15;
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Array(maxDataPoints).fill(''),
+                datasets: [{
+                    data: Array(maxDataPoints).fill(null),
+                    borderColor: '#4f46e5',
+                    borderWidth: 2.5,
+                    pointRadius: 0,
+                    fill: true,
+                    backgroundColor: 'rgba(79, 70, 229, 0.03)',
+                    tension: 0.2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { display: false },
+                    y: { grid: { color: '#f1f5f9' }, ticks: { color: '#94a3b8', font: { size: 10 } } }
+                }
+            }
+        });
+
+        // REAL-TIME BINANCE PRICE STREAM
+        function connectPriceStream() {
+            const ws = new WebSocket('wss://stream.binance.com:9443/ws/tonusdt@ticker');
+            let lastPrice = 0;
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                currentTonPrice = parseFloat(data.c);
+                
+                const priceElement = document.getElementById('live-price');
+                priceElement.innerText = `$${currentTonPrice.toFixed(4)}`;
+                
+                // Add price flashing color effect
+                if (currentTonPrice > lastPrice) {
+                    priceElement.className = "text-2xl font-extrabold tracking-tight price-up";
+                } else if (currentTonPrice < lastPrice) {
+                    priceElement.className = "text-2xl font-extrabold tracking-tight price-down";
+                }
+                lastPrice = currentTonPrice;
+
+                // Update Real-time Chart
+                chart.data.datasets[0].data.push(currentTonPrice);
+                if (chart.data.datasets[0].data.length > maxDataPoints) {
+                    chart.data.datasets[0].data.shift();
+                }
+                chart.update('none'); 
+            };
+            ws.onerror = () => setTimeout(connectPriceStream, 3000);
+        }
+        connectPriceStream();
+
+        // USER DATA PIPELINE
         function loadUserStatus() {
             fetch(`/api/user-status?user_id=${userId}`)
             .then(res => res.json())
             .then(data => {
-                document.getElementById('user-balance').innerText = `${data.balance} Gram`;
+                document.getElementById('user-balance').innerText = `${data.balance.toFixed(2)} Gram`;
                 if (data.is_locked) {
                     document.getElementById('referral-lock').classList.remove('hidden');
                     document.getElementById('ref-progress').style.width = (data.invites / 5 * 100) + '%';
-                    document.getElementById('ref-count').innerHTML = `Invites: <span class="text-sky-500 font-bold">${data.invites}</span> / 5`;
+                    document.getElementById('ref-count').innerHTML = `Invites: <span class="text-indigo-600 font-bold">${data.invites}</span> / 5`;
                 } else {
                     document.getElementById('referral-lock').classList.add('hidden');
                 }
-            }).catch(err => console.error("Error connecting to Python API:", err));
+            });
         }
-
-        // Initial setup run
         loadUserStatus();
 
-        // Dynamic Tab Switching
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('text-sky-400', 'text-slate-600'));
-            document.querySelectorAll('.nav-btn').forEach(el => el.classList.add('text-slate-400'));
+            document.querySelectorAll('.nav-btn').forEach(el => { el.classList.remove('text-indigo-600'); el.classList.add('text-slate-400'); });
             
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
             event.currentTarget.classList.remove('text-slate-400');
-            event.currentTarget.classList.add('text-sky-400');
+            event.currentTarget.classList.add('text-indigo-600');
             
             if(tabId === 'leaderboard') loadLeaderboard();
         }
 
-        // Viral Share Link Copying
         function shareLink() {
-            const botUsername = "YourBotName_bot"; // Replace with your actual bot username without @
+            const botUsername = "YourBotName_bot"; // Change to your bot username without @
             const link = `https://t.me/${botUsername}?start=${userId}`;
-            
             if (tg && tg.openTelegramLink) {
-                // Inside Telegram, open the direct invite system
-                tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent("Join my team on Gram Prediction Game! 📈")}`);
+                tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(link)}&text=${encodeURIComponent("Predict TON price live and earn rewards! 🎮📈")}`);
             } else {
-                // Fallback copy paste for browser testing
                 navigator.clipboard.writeText(link);
-                alert("Your unique invite link copied to clipboard! ✨");
+                alert("Invite link copied to clipboard!");
             }
         }
 
-        // Anime Aesthetics Chart (Mint Line / Pastel Background)
-        const ctx = document.getElementById('priceChart').getContext('2d');
-        let chartData = [2.45, 2.47, 2.44, 2.48, 2.51, 2.49, 2.53];
-        const chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['60s', '50s', '40s', '30s', '20s', '10s', 'Now'],
-                datasets: [{
-                    label: 'Gram Price ($)',
-                    data: chartData,
-                    borderColor: '#3cd0aa',
-                    borderWidth: 3,
-                    pointRadius: 2,
-                    pointBackgroundColor: '#3cd0aa',
-                    fill: true,
-                    backgroundColor: 'rgba(60, 208, 170, 0.08)',
-                    tension: 0.4
-                }]
-            },
-            options: { 
-                responsive: true, 
-                plugins: { legend: { display: false } }, 
-                scales: { 
-                    x: { grid: { display: false }, ticks: { color: '#94a3b8' } }, 
-                    y: { grid: { color: '#f1f5f9' }, ticks: { color: '#94a3b8' } } 
-                } 
-            }
-        });
-
-        // Post users prediction to Python backend
         function makePrediction(type) {
             const seconds = document.getElementById('predict-time').value;
             fetch('/api/predict', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: userId, prediction: type, duration: seconds })
+                body: JSON.stringify({ user_id: userId, prediction: type, duration: seconds, current_price: currentTonPrice })
             })
             .then(res => res.json())
             .then(data => {
                 alert(data.message);
-                loadUserStatus(); // Refresh balance
+                loadUserStatus();
             });
         }
 
-        // Load Top Players Leaderboard
         function loadLeaderboard() {
             fetch('/api/leaderboard')
             .then(res => res.json())
             .then(data => {
                 const list = document.getElementById('leaderboard-list');
                 list.innerHTML = data.map((user, index) => `
-                    <div class="flex justify-between items-center bg-white/50 p-3 rounded-xl border border-slate-100">
+                    <div class="flex justify-between items-center bg-white/40 p-3.5 rounded-2xl border border-white/60">
                         <div class="flex items-center gap-3">
-                            <span class="font-bold text-slate-400 w-5">${index + 1}</span>
-                            <span class="font-semibold text-slate-700">${user.username}</span>
+                            <span class="font-extrabold text-slate-300 text-sm w-5">${index + 1}</span>
+                            <span class="font-bold text-slate-700 text-sm">${user.username}</span>
                         </div>
-                        <span class="text-sky-500 font-bold">${user.score} Gram</span>
+                        <span class="text-indigo-600 font-extrabold text-sm">${user.score} Gram</span>
                     </div>
                 `).join('');
             });
